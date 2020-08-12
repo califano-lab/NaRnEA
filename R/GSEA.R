@@ -1,9 +1,9 @@
-#' GSEA as described in Subramanian et. al. 2005 PNAS
+#' Gene Set Enrichment Analysis (GSEA) as described in Subramanian et al. 2005 PNAS
 #' 
 #' @param ges Gene expression signature (named numeric vector)
-#' @param geneset Set of genes to test for enrichment in the GES (character vector)
-#' @param score Power score for GSEA. Default value of 1 (standard for GSEA; use 0 for two-sample KS test)
-#' @return An enrichment score for geneset in the GES.
+#' @param geneset Set of genes to test for enrichment in the gene expression signature (character vector)
+#' @param score Power score for GSEA. Default value of 1 (standard for GSEA; use 0 for two-sample Kolmogorov-Smirnov test originally employed in Mootha et al. 2003 Nature Genetics)
+#' @return An enrichment score for geneset in the gene expression signature.
 GSEA <- function(ges,geneset,score = 1){
   
   # set the input values to local variables

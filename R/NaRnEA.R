@@ -5,14 +5,14 @@
 # seed = random number generator seed to ensure that ties in the gene expression signature are broken randomly in a reproducible manner
 # leading.edge = whether or not to compute the leading edge z-scores for the members of the gene set (logical) 
 
-#' NaRnEA (Non-parameetric analytical rank-based enrichment analysis) function
+#' Non-parametric analytical rank-based enrichment analysis (NaRnEA) function
 #' 
 #' @param ges Gene expression signature (named numeric vector)
-#' @param regulon Gene set parameterized w/ Regulation Confidence (likelihood) and Mode of Regulation (tfmode)
-#' @param minsize Minimum overlap between regulon and gene expression signature. Default of 30.
-#' @param seed Randomly generated seed to ensure ties in the GES are broken in a reproducible manner. Default of 1.
-#' @param leading.edge Flag to compute leading edge z-scores for the members of the gene set. False by default.
-#' @return A list with the NES, PES, maximum and minimum possible NES, and the leading edge if specified.
+#' @param regulon Gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)
+#' @param minsize Minimum number of gene set members that are present in the gene expression signature. Default of 30.
+#' @param seed Randomly generated seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.
+#' @param leading.edge Flag to compute leading edge z-scores for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).
+#' @return A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge z-scores (if specified).
 NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
   
   # set the seed
