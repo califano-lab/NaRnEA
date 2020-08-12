@@ -8,7 +8,7 @@ Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) enables users 
 install the NaRnEA package from github
 ```{r}
 library(devtools)
-install_github(repo = "califano-lab/NaRnEA", auth_token = "25fa79a6847c853f310a01dcfe173091ccb3400a", force = TRUE)
+install_github(repo = "califano-lab/NaRnEA")
 ```
 
 load the NaRnEA package and ggplot2 for plotting
