@@ -1,10 +1,3 @@
-## NaRnEA = Non-parametric analytical Rank-based Enrichment Analysis
-# ges = gene expression signature (named numeric vector)
-# regulon = gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)
-# minsize = minimum number of genes in the regulon that are also in the gene expression signature
-# seed = random number generator seed to ensure that ties in the gene expression signature are broken randomly in a reproducible manner
-# leading.edge = whether or not to compute the leading edge z-scores for the members of the gene set (logical) 
-
 #' Non-parametric analytical rank-based enrichment analysis (NaRnEA) function
 #' 
 #' @param ges Gene expression signature (named numeric vector)
