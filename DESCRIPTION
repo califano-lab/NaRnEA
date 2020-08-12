@@ -1,13 +1,13 @@
 Package: NaRnEA
-Title: What the Package Does (One Line, Title Case)
+Title: Non-parametric Analytical Rank-based Enrichment Analysis
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Aaron",
+           family = "Griffin",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "aaron.timothy.griffin@gmail.com",
+           comment = c(ORCID = "https://orcid.org/0000-0002-8027-0822"))
+Description: Non-parametric analytical Rank-based Enrichment Analysis enables users to test for gene set enrichment in a gene expression signature using a non-parametric, frequentist statistical framework.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8
