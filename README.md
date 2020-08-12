@@ -1,5 +1,5 @@
 # NaRnEA
-## NaRnEA (Non-parameetric analytical rank-based enrichment analysis)
+## NaRnEA (Non-parametric analytical rank-based enrichment analysis)
 
 Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) enables users to perform highly accurate gene set analysis in a non-parametric, frequentist manner.
 
