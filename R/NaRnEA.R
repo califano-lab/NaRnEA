@@ -13,6 +13,7 @@
 #' @param seed Randomly generated seed to ensure ties in the GES are broken in a reproducible manner. Default of 1.
 #' @param leading.edge Flag to compute leading edge z-scores for the members of the gene set. False by default.
 #' @return A list with the NES, PES, maximum and minimum possible NES, and the leading edge if specified.
+#' @export
 NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
   
   # set the seed

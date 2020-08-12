@@ -3,6 +3,7 @@
 #' @param ges Gene expression signature (named numeric vector)
 #' @param geneset Set of genes to test for enrichment in the GES (character vector)
 #' @param score Power score for GSEA. Default value of 1 (standard for GSEA; use 0 for two-sample KS test)
+#' @export
 #' @return An enrichment score for geneset in the GES.
 GSEA <- function(ges,geneset,score = 1){
   
