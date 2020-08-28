@@ -1,40 +1,35 @@
 # NaRnEA
+
 ## NaRnEA (Non-parametric analytical rank-based enrichment analysis)
 
-Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) enables users to perform highly accurate gene set analysis in a non-parametric, frequentist manner.
+Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) enables users to perform accurate and powerful gene set analysis in a non-parametric, frequentist manner.
 
-## Simulated Gene Set Enrichment Walkthrough 
+## Installing NaRnEA
 
-install the NaRnEA package from github
+NaRnEA is distributed free for scientific use as an R package; use the following code to download and install NaRnEA.
 ```{r}
-library(devtools)
-install_github(repo = "califano-lab/NaRnEA")
+devtools::install_github(repo = "califano-lab/NaRnEA")
 ```
 
-load the NaRnEA package and ggplot2 for plotting
+## Simulated Gene Set Enrichment Analysis
+
+Load the NaRnEA package and the ggplot2 package (for improved plotting functionality)
 ```{r}
 library(NaRnEA)
 library(ggplot2)
 ```
 
-set the simulation parameters
+Set the parameters for the simulation. Here we will be simulating 5,000 gene expression signatures, each with 20,000 genes. The gene expression signature values for each gene will be independently and identically distributed from a uniform distribution on the interval [-10,10]. NaRnEA is a non-parametric method and therefore does not assume anything about the gene expression signature, but using a simple gene expression signature for these simulations increases our ability to intuitively interpret the results. 
 ```{r}
 sim.seed <- 1234
-
 gene.num <- 20000
-
 sample.num <- 5000
-
 sig.figs <- 3
-
 boot.num <- 1E3
-
 null.ges.min <- -10
 null.ges.max <- 10
-
 alt.ges.min <- 5
 alt.ges.max <- 10
-
 gene.set.size <- 100
 gene.set.RC.min <- 0
 gene.set.RC.max <- 1
@@ -42,12 +37,12 @@ gene.set.MoR.min <- -1
 gene.set.MoR.max <- 1
 ```
 
-set the seed for the simulation 
+Set the seed for the simulation; this will ensure that the results of the simulation are reproducible.
 ```{r}
 set.seed(sim.seed)
 ```
 
-simulate the gene expression signature values for all genes in the different samples under the null distribution
+Now we'll simulate the gene expression signature values and store them in a matrix with genes in the rows and samples in the columns.
 ```{r}
 cur.ges.mat <- matrix(data = NA, nrow = gene.num, ncol = sample.num)
 cur.ges.mat <- apply(cur.ges.mat,2,function(x){
@@ -58,7 +53,7 @@ colnames(cur.ges.mat) <- paste("s",1:ncol(cur.ges.mat),"",sep = "_")
 rownames(cur.ges.mat) <- paste("g",1:nrow(cur.ges.mat),"",sep = "_")
 ```
 
-randomly select some genes and construct the gene sets which do not overlap
+Next we will create two gene sets, each with the prespecified number of members. For this simulation the gene sets will be constructed so that they do not overlap. The Regulation Confidence (`r likelihood`) values will be randomly drawn from a uniform distribution bounded by the prespecificed `r gene.set.RC.min` and `r gene.set.RC.max` parameters. The Mode of Regulation (`r tfmode`) values will be randomly drawn from a uniform distribution bounded by the prespecificed `r gene.set.MoR.min` and `r gene.set.MoR.max` parameters. 
 ```{r}
 gene.set.1.targets <- sample(rownames(cur.ges.mat), size = gene.set.size)
 gene.set.2.targets <- sample(setdiff(rownames(cur.ges.mat),gene.set.1.targets), size = gene.set.size)
@@ -70,12 +65,12 @@ gene.set.2 <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max
 names(gene.set.2$tfmode) <- gene.set.2.targets
 ```
 
-verify the gene sets don't overlap
+We can verify quickly whether or not the gene sets overlap.
 ```{r}
 intersect(names(gene.set.1$tfmode),names(gene.set.2$tfmode))
 ```
 
-modulate the gene expression signature values for the members of the first gene set
+As of now neither gene set is enriched in any gene expression signature; all gene set members are independently and identically distributed in the gene expression signatures. We will now change that by resimulating the gene expression signature values for the members of the first gene set based on the `r alt.ges.min` and `r alt.ges.max` parameters and the sign of each target's Mode of Regulation.
 ```{r}
 cur.ges.mat <- apply(cur.ges.mat,2,function(x){
 	y <- x
@@ -84,7 +79,7 @@ cur.ges.mat <- apply(cur.ges.mat,2,function(x){
 })
 ```
 
-compute the enrichment of the gene sets in the gene expression signatures using NaRnEA
+We can now compute the enrichment of the gene sets in each of the gene expression signatures with NaRnEA. For now, we'll do this without leading edge analysis; setting `r leading.edge = TRUE` allows for post-hoc leading edge analysis but increases computational time. 
 ```{r}
 gene.set.1.enrichment.results <- apply(cur.ges.mat,2,function(cur.ges,cur.gene.set){
 	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.gene.set, seed = 1, leading.edge = FALSE))
