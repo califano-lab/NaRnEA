@@ -1,0 +1,21 @@
+---
+title: "The Theory Behind NaRnEA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The Theory Behind NaRnEA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(NaRnEA)
+```
+
+This vignette outlines the theory behind Non-parametric Analytical Rank-based Enrichment Analysis. 
