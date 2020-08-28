@@ -14,8 +14,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(NaRnEA)
-```
+This vignette outlines the theory underlying Non-parametric Analytical Rank-based Enrichment Analysis.
 
-This vignette outlines the theory behind Non-parametric Analytical Rank-based Enrichment Analysis. 
+### Gene Expression Profiles
+
+In order to develop the theory of gene set analysis we will consider two hypothetical and biologically distinct phenotypes; we will refer to these as the test phenotype and the reference phenotype.
+
+We may define the gene expression profile of the ith sample as the real-valued vector $(x_1,...,x_G)_i$ such that $x_gi$ is the relative molar concentration of stuff.
+
+
