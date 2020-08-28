@@ -8,7 +8,7 @@ Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) enables users 
 
 NaRnEA is distributed free for scientific use as an R package; use the following code to download and install NaRnEA.
 ```{r}
-devtools::install_github(repo = "califano-lab/NaRnEA")
+devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRUE)
 ```
 
 ## NaRnEA Theory and Walkthroughs
