@@ -24,6 +24,6 @@ We may define the gene expression profile of the ith sample as the real-valued v
 
 Here we've included a figure of how this would look:
 
-```{r}
-knitr::include_graphics(path = "/Volumes/ATG_4TB_HD/ATG_NARNEA_Project/NaRnEA_Github_Package/NaRnEA/man/figures/Fig_1_2.png", dpi = 1000)
+```{r, include = FALSE}
+knitr::include_graphics(path = "../man/figures/Fig_1_2.png", dpi = 1000)
 ```
