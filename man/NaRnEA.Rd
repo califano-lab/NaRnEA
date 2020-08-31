@@ -2,24 +2,24 @@
 % Please edit documentation in R/NaRnEA.R
 \name{NaRnEA}
 \alias{NaRnEA}
-\title{NaRnEA (Non-parameetric analytical rank-based enrichment analysis) function}
+\title{Non-parametric analytical rank-based enrichment analysis (NaRnEA) function}
 \usage{
 NaRnEA(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE)
 }
 \arguments{
 \item{ges}{Gene expression signature (named numeric vector)}
 
-\item{regulon}{Gene set parameterized w/ Regulation Confidence (likelihood) and Mode of Regulation (tfmode)}
+\item{regulon}{Gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)}
 
-\item{minsize}{Minimum overlap between regulon and gene expression signature. Default of 30.}
+\item{minsize}{Minimum number of gene set members that are present in the gene expression signature. Default of 30.}
 
-\item{seed}{Randomly generated seed to ensure ties in the GES are broken in a reproducible manner. Default of 1.}
+\item{seed}{Random number generator seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.}
 
-\item{leading.edge}{Flag to compute leading edge z-scores for the members of the gene set. False by default.}
+\item{leading.edge}{Flag to compute leading edge p-values for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).}
 }
 \value{
-A list with the NES, PES, maximum and minimum possible NES, and the leading edge if specified.
+A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge p-values (if specified).
 }
 \description{
-NaRnEA (Non-parameetric analytical rank-based enrichment analysis) function
+Non-parametric analytical rank-based enrichment analysis (NaRnEA) function
 }

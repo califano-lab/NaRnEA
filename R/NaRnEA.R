@@ -3,7 +3,7 @@
 #' @param ges Gene expression signature (named numeric vector)
 #' @param regulon Gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)
 #' @param minsize Minimum number of gene set members that are present in the gene expression signature. Default of 30.
-#' @param seed Randomly generated seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.
+#' @param seed Random number generator seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.
 #' @param leading.edge Flag to compute leading edge p-values for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).
 #' @return A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge p-values (if specified).
 #' @export

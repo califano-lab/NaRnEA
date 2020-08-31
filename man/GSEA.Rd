@@ -2,20 +2,20 @@
 % Please edit documentation in R/GSEA.R
 \name{GSEA}
 \alias{GSEA}
-\title{GSEA as described in Subramanian et. al. 2005 PNAS}
+\title{Gene Set Enrichment Analysis (GSEA) as described in Subramanian et al. 2005 PNAS}
 \usage{
 GSEA(ges, geneset, score = 1)
 }
 \arguments{
 \item{ges}{Gene expression signature (named numeric vector)}
 
-\item{geneset}{Set of genes to test for enrichment in the GES (character vector)}
+\item{geneset}{Set of genes to test for enrichment in the gene expression signature (character vector)}
 
-\item{score}{Power score for GSEA. Default value of 1 (standard for GSEA; use 0 for two-sample KS test)}
+\item{score}{Power score for GSEA. Default value of 1 (standard for GSEA; use 0 for two-sample Kolmogorov-Smirnov test originally employed in Mootha et al. 2003 Nature Genetics)}
 }
 \value{
-An enrichment score for geneset in the GES.
+An enrichment score for geneset in the gene expression signature.
 }
 \description{
-GSEA as described in Subramanian et. al. 2005 PNAS
+Gene Set Enrichment Analysis (GSEA) as described in Subramanian et al. 2005 PNAS
 }
