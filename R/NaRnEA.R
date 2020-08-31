@@ -4,8 +4,8 @@
 #' @param regulon Gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)
 #' @param minsize Minimum number of gene set members that are present in the gene expression signature. Default of 30.
 #' @param seed Randomly generated seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.
-#' @param leading.edge Flag to compute leading edge z-scores for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).
-#' @return A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge z-scores (if specified).
+#' @param leading.edge Flag to compute leading edge p-values for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).
+#' @return A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge p-values (if specified).
 #' @export
 NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
   
@@ -164,7 +164,7 @@ NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
     cur.final.pes <- (cur.final.nes) / abs(cur.final.nes.min)
   }
   
-  # computing the leading edge for the gene set if desired
+  # computing the leading edge p-values for the gene set if desired
   if(leading.edge){
     if(cur.final.pes > 0){
       cur.ledge.values <- cur.directed.es.values + cur.undirected.es.values
@@ -175,7 +175,6 @@ NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
         cur.gene.ledge.p.value <- (1 + sum((cur.gene.null.ledge.values > as.numeric(cur.ledge.values[match(cur.gene,names(cur.ledge.values))]))))/(1 + length(cur.gene.null.ledge.values))
         return(cur.gene.ledge.p.value)
       })
-      cur.ledge.z.scores <- qnorm(p = cur.ledge.p.values, lower.tail = FALSE)
     } else {
       cur.ledge.values <- cur.directed.es.values - cur.undirected.es.values
       cur.ledge.p.values <- sapply(names(cur.ledge.values),function(cur.gene){
@@ -185,14 +184,13 @@ NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
         cur.gene.ledge.p.value <- (1 + sum((cur.gene.null.ledge.values < as.numeric(cur.ledge.values[match(cur.gene,names(cur.ledge.values))]))))/(1 + length(cur.gene.null.ledge.values))
         return(cur.gene.ledge.p.value)
       })
-      cur.ledge.z.scores <- qnorm(p = cur.ledge.p.values, lower.tail = TRUE)
     }
-    cur.final.ledge <- cur.ledge.z.scores
+    cur.final.ledge <- cur.gene.ledge.p.value
   } else {
     cur.final.ledge <- NA
   }
   
-  # return the normalized enrichment score, the proportional enrichment score, the maximum normalized enrichment score, the minimum normalized enrichment score, and the leading edge (if desired) for the gene set
+  # return the normalized enrichment score, the proportional enrichment score, the maximum normalized enrichment score, the minimum normalized enrichment score, and the leading edge p-values (if desired) for the gene set
   cur.res.list <- list(pes = cur.final.pes, nes = cur.final.nes, nes.max = cur.final.nes.max, nes.min = cur.final.nes.min, ledge = cur.final.ledge)
   return(cur.res.list)
   
