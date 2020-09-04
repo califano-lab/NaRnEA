@@ -1,0 +1,77 @@
+---
+title: "Powerful and Accurate Gene Set Analysis with NaRnEA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Powerful and Accurate Gene Set Analysis with NaRnEA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) is a novel statistical method created by [Griffin et al.](https://www.biorxiv.org/search/NaRnEA) for the purpose of performing powerful and accurate gene set analysis. 
+
+## Theory of NaRnEA
+
+Before we use NaRnEA it is helpful to consider the theory behind the algorithm. Gene set analysis can be viewed as a subfield within the broader discipline of systems biology, which focuses on computational and mathematical modeling of complex biological systems. One of the central ideas in biology is the concept of homeostasis; a biological system will use energy to actively maintain its internal state. The central dogma of cellular biology states that genomic information (i.e. DNA) is made manifest in the cellular phenotype (i.e. proteins) via a transcriptional intermediate (i.e. mRNA). Transcriptomic technologies (e.g. RNA sequencing) allow us to measure the relative molar concentration (i.e. expression) of all protein-coding genes in a biological system simultaneously, providing an extremely high-dimensional window into the phenotype. 
+
+Let us imagine that we are considering two biologically distinct phenotypes; for example, human cardiomyocytes and human lung epithelial cells. Generally speaking, the ~20,000 protein-coding genes which are present in the genome of the cardiomyocytes are also present in the genome of the lung epithelial cells, but the expression of each gene is finely tuned according to each phenotype.
+
+We can define the relative molar concentration of transcripts originating from the $gth$ gene in the $ith$ sample as follows:
+
+$$ x_{gi} = \frac{ t_{gi} }{ \sum_{g=1}^{G} t_{gi} } $$
+
+where $t_{gi}$ is the number of transcripts originating from the $gth$ gene in the $ith$ sample. [Wagner et al.](https://pubmed.ncbi.nlm.nih.gov/22872506/) do an excellent job of clarifying the why relative molar concentration is the closest that RNA sequencing and other transcriptomic technologies can get to the true expression of a gene without measuring the absolute number of transcripts in a sample.
+
+Using this language, we can define the gene expression profile of the $ith$ sample as the real-valued vector $(x_{1},...,x_{G})_{i}$ where $x_{gi} \in [0,1]$.  
+
+## Installing NaRnEA
+
+The NaRnEA R package can be installed from the [Califano Lab github](https://github.com/califano-lab/NaRnEA) using the $devtools$ R package with the following code.
+```{r, eval = FALSE}
+devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRUE)
+```
+
+## Simulated Gene Set Analysis with NaRnEA
+
+We can first evaluate NaRnEA's capacity for performing powerful and accurate gene set analysis using some simulated data.
+
+```{r, eval = FALSE}
+sim.seed <- 11
+
+gene.num <- 20000
+
+null.ges.min <- -10
+null.ges.max <- 10
+
+gene.set.size <- 100
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+```
+
+## Inferring Master Regulators of Lung Adenocarcinoma with NaRnEA
+
+Information
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
