@@ -1,8 +1,8 @@
 ---
-title: "Powerful and Accurate Gene Set Analysis with NaRnEA"
+title: "NaRnEA - Statistical Theory"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Powerful and Accurate Gene Set Analysis with NaRnEA}
+  %\VignetteIndexEntry{NaRnEA - Statistical Theory}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -44,49 +44,4 @@ Let the vector $(Z_{g})_{TR}$ be the gene expression signature between the test 
 
 
 For example, if the $gth$ gene is always highly expressed in the test phenotype and is epigenetically silenced in the reference phenotype, $Z_{gTR}$ should be very large. 
-
-
-
-## Installing NaRnEA
-
-The NaRnEA R package can be installed from the [Califano Lab github](https://github.com/califano-lab/NaRnEA) using the `devtools` R package with the following code.
-```{r, eval = FALSE}
-devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRUE)
-```
-
-## Simulated Gene Set Analysis with NaRnEA
-
-We can first evaluate NaRnEA's capacity for performing powerful and accurate gene set analysis using some simulated data.
-
-```{r, eval = FALSE}
-sim.seed <- 11
-
-gene.num <- 20000
-
-null.ges.min <- -10
-null.ges.max <- 10
-
-gene.set.size <- 100
-
-alt.ges.min <- 5
-alt.ges.max <- 10
-```
-
-## Inferring Master Regulators of Lung Adenocarcinoma with NaRnEA
-
-Information
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

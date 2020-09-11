@@ -1,0 +1,52 @@
+---
+title: "NaRnEA - User Guide Part 1"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{NaRnEA - User Guide Part 1}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) is a novel statistical method created by [Griffin et al.](https://www.biorxiv.org/search/NaRnEA) for the purpose of performing powerful and accurate gene set analysis. 
+
+## Installing NaRnEA
+
+The NaRnEA R package can be installed from the [Califano Lab Github](https://github.com/califano-lab/NaRnEA) using the `devtools` R package with the following code.
+```{r, eval = FALSE}
+devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRUE)
+```
+
+## Simulated Gene Set Analysis with NaRnEA
+
+We can first evaluate NaRnEA's capacity for performing powerful and accurate gene set analysis using some simulated data.
+
+```{r, eval = FALSE}
+sim.seed <- 11
+
+gene.num <- 20000
+
+null.ges.min <- -10
+null.ges.max <- 10
+
+gene.set.size <- 100
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+```
+
+## Inferring Master Regulators of Lung Adenocarcinoma with NaRnEA
+
+Information
+
+
+
+
