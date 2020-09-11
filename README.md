@@ -12,7 +12,7 @@ devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vigne
 ```
 
 ## NaRnEA Theory and Walkthroughs
-To learn more about using NaRnEA and the theory behind NaRnEA, check out the NaRnEA vignette.
+To learn more about using NaRnEA and the theory behind NaRnEA, check out the NaRnEA vignettes.
 ```{r}
 library(NaRnEA)
 browseVignettes(package = "NaRnEA")
