@@ -143,6 +143,654 @@ EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_5.png", dpi = 500)
 ```
 
+NaRnEA performs exactly as we would expect, with a steadily increasing proportional enrichment score and consistently significant two-sided p-values. Let's double check if this behavior is observed for steadily decreasing negative enrichment.
+```{r, eval = FALSE}
+alt.ges.min <- -10
+alt.ges.max <- 0
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_6.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -10
+alt.ges.max <- -2
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_7.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -10
+alt.ges.max <- -4
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_8.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -10
+alt.ges.max <- -6
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_9.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -10
+alt.ges.max <- -8
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_10.png", dpi = 500)
+```
+
+Once again, NaRnEA performs exactly as we would expect, with a steadily decreasing proportional enrichment score and consistently significant two-sided p-values. Finally, let's check if NaRnEA is able to overcome the GSEA, a previous gene set enrichment analysis which is overly sensitive to non-uniform distribution of gene sets in the gene expression signature. We can evaluate this by steadily restricting the distribution of gene set members until they are clumped together in the middle of the gene expression signature. For the visualization we'll set the score parameter to 1 to change the KS running sum statistic to a GSEA running sum statistic. We'll also precompute the GSEA null model using 5000 null gene sets randomly selected from the true gene set's complement.
+```{r, eval = FALSE}
+alt.ges.min <- -10
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+gsea.null.enrichment.scores <- sapply(1:5000,function(i){
+	cur.null.gene.set <- sample(setdiff(names(synthetic.ges),names(synthetic.gene.set$tfmode)), size = length(synthetic.gene.set$tfmode))
+	cur.null.es <- GSEA(ges = synthetic.ges, geneset = cur.null.gene.set, score = 1)
+	return(cur.null.es)
+})
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_11.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -9
+alt.ges.max <- 9
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_12.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -8
+alt.ges.max <- 8
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_13.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -7
+alt.ges.max <- 7
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_14.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -6
+alt.ges.max <- 6
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_15.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -5
+alt.ges.max <- 5
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_16.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -4
+alt.ges.max <- 4
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_17.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -3
+alt.ges.max <- 3
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_18.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -2
+alt.ges.max <- 2
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_19.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- -1
+alt.ges.max <- 1
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.gsea.es <- GSEA(ges = synthetic.ges, geneset = names(synthetic.gene.set$tfmode), score = 1)
+cur.gsea.nes <- cur.gsea.es/abs(mean(gsea.null.enrichment.scores[which(sign(gsea.null.enrichment.scores) == sign(cur.gsea.es))]))
+cur.gsea.p.value <- max(c(mean(abs(gsea.null.enrichment.scores) >= abs(cur.gsea.es)), (1/length(gsea.null.enrichment.scores))))
+
+cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif((2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)),3), "\n", "GSEA", " : ", "ES = ", signif(cur.gsea.es,3), " : ", "NES = ",signif(cur.gsea.nes,3), " : ", " p = ",signif(cur.gsea.p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_20.png", dpi = 500)
+```
+
+
+NaRnEA performs exactly as we would expect; the proportional enrichment score decreases in magnitude and the two-sided p-value does not achieve statistical significance. GSEA, on the other hand, eventually rejects the null hypothesis when the gene set members become clumped together in the middle of the gene expression signature due to the method's high degree of sensitivity for non-uniformity regardless of whether or not that non-uniformity occurs due to enrichment of the gene set at the extremes of the gene expression signature.
+
+The NaRnEA proportional enrichment score is designed as an effect size which allows us to make comparisons between gene sets with different parameterizations after rejecting the null hypothesis of gene set analysis based on the NaRnEA two-sided p-value computed from the NaRnEA normalized enrichment score. We can demonstrate the utility of the proportional enrichment score by comparing the equivalent enrichment of differently sized gene sets. For each new gene set we'll compute the NaRnEA proportional enrichment score, normalized enrichment score, and two-sided p-value. We'll also compute a non-parametric 95% confidence interval for the NaRnEA proportional enrichment score by bootstrapping the gene set members. 
+```{r, eval = FALSE}
+gene.num <- 20000
+null.ges.min <- -10
+null.ges.max <- 10
+synthetic.ges <- runif(n = gene.num, min = null.ges.min, max = null.ges.max)
+names(synthetic.ges) <- paste("g",1:length(synthetic.ges),"",sep = "_")
+
+gene.set.size <- 100
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_21.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 200
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_22.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 300
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_23.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 400
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_24.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 500
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_25.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 600
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_26.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 700
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_27.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 800
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_28.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 900
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_29.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+gene.set.size <- 1000
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+
+alt.ges.min <- 5
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+cur.narnea.res <- NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+cur.narnea.res$p.value <- 2*pnorm(q = abs(cur.narnea.res$nes), lower.tail = FALSE)
+
+cur.boot.idx.list <- lapply(1:100,function(i){
+	y <- sample(1:gene.set.size, size = gene.set.size, replace = TRUE)
+	return(y)
+})
+cur.boot.pes.values <- sapply(cur.boot.idx.list,function(sub.idx){
+	sub.gene.set <- list(tfmode = synthetic.gene.set$tfmode[sub.idx], likelihood = synthetic.gene.set$likelihood[sub.idx])
+	sub.pes <- NaRnEA(ges = synthetic.ges, regulon = sub.gene.set)$pes
+	return(sub.pes)
+})
+cur.narnea.res$pes.conf.int <- quantile(x = cur.boot.pes.values, probs = c(.025,.975), names = FALSE)
+cur.narnea.res
+
+cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " [", signif(cur.narnea.res$pes.conf.int[1],3),",", signif(cur.narnea.res$pes.conf.int[2],3),"]", " : ", "NES = ", signif(cur.narnea.res$nes,3), " : ", "p = ", signif(cur.narnea.res$p.value,3), sep = "")
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_30.png", dpi = 500)
+```
+
+
+
+
 
 
 
