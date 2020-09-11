@@ -25,27 +25,61 @@ The NaRnEA R package can be installed from the [Califano Lab Github](https://git
 devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRUE)
 ```
 
-## Simulated Gene Set Analysis with NaRnEA
+## NaRnEA Statistical Theory
 
-We can first evaluate NaRnEA's capacity for performing powerful and accurate gene set analysis using some simulated data.
-
+To learn more about the statistical theory behind NaRnEA, check out the "NaRnEA - Statistical Theory" vignette with the following command.
 ```{r, eval = FALSE}
-sim.seed <- 11
-
-gene.num <- 20000
-
-null.ges.min <- -10
-null.ges.max <- 10
-
-gene.set.size <- 100
-
-alt.ges.min <- 5
-alt.ges.max <- 10
+vignette(topic = "NaRnEA_Theory", package = "NaRnEA")
 ```
 
-## Inferring Master Regulators of Lung Adenocarcinoma with NaRnEA
+## Simulated Gene Set Analysis with NaRnEA
 
-Information
+We'll begin our user guide with something very simple, demonstrating the enrichment of a gene set in a simulated gene expression signature at varying levels of enrichment which we will manually control. This will allow us to observe the behavior of NaRnEA in a controlled setting. First let's load `NaRnEA` as well as `ggplot2`, a `tidyverse` package that we'll use for plotting.
+```{r, eval = FALSE}
+library(NaRnEA)
+library(ggplot2)
+```
+
+Next we'll set the seed for the simulation, which will ensure that our simulated gene set and simulated gene expression signature are reproducible.
+```{r, eval = FALSE}
+sim.seed <- 11
+set.seed(sim.seed)
+```
+
+Now let's simulate a gene expression signature; we can do this in a very simple manner by simulating gene expression signature values for 20,000 genes uniformly on the interval [-10,10]. The gene expression signature vector should also be named so that we know which value corresponds to which gene.
+```{r, eval = FALSE}
+gene.num <- 20000
+null.ges.min <- -10
+null.ges.max <- 10
+synthetic.ges <- runif(n = gene.num, min = null.ges.min, max = null.ges.max)
+names(synthetic.ges) <- paste("g",1:length(synthetic.ges),"",sep = "_")
+```
+
+Now let's create a gene set by randomly selecting some genes from the gene expression signature; we'll go with 100 genes for now. Each gene in the gene set will need to be parameterized with a Mode of Regulation (tfmode) and a Regulation Confidence (likelihood) parmeter. NaRnEA will use these parameters to determine how the differential expression of each gene contribtes to the enrichment of the gene set in the gene expression signature
+```{r, eval = FALSE}
+gene.set.size <- 100
+gene.set.MoR.min <- -1
+gene.set.MoR.max <- 1
+gene.set.RC.min <- 0
+gene.set.RC.max <- 1
+
+synthetic.gene.set.targets <- sample(names(synthetic.ges), size = gene.set.size)
+synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
+```
+
+Because the members of this gene set were selected at random from the gene expression signature we know the null hypothesis of gene set analysis is true for this gene set (i.e. the gene set is not enriched in the gene expression signature). Let's check to see if NaRnEA agrees with this ground truth; we can test this numerically by calling the NaRnEA function directly or by using the visualization function EnrichmentAnalysisPlot.
+```{r, eval = FALSE}
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/Fig_2_1.png", dpi = 500)
+```
+
+
+
+
 
 
 
