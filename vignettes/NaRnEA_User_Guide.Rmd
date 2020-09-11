@@ -20,21 +20,36 @@ Non-parametric analytical Rank-based Enrichment Analysis (NaRnEA) is a novel sta
 
 ## Theory of NaRnEA
 
-Before we use NaRnEA it is helpful to consider the theory behind the algorithm. Gene set analysis can be viewed as a subfield within the broader discipline of systems biology, which focuses on computational and mathematical modeling of complex biological systems. One of the central ideas in biology is the concept of homeostasis; a biological system will use energy to actively maintain its internal state. The central dogma of cellular biology states that genomic information (i.e. DNA) is made manifest in the cellular phenotype (i.e. proteins) via a transcriptional intermediate (i.e. mRNA). Transcriptomic technologies (e.g. RNA sequencing) allow us to measure the relative molar concentration (i.e. expression) of all protein-coding genes in a biological system simultaneously, providing an extremely high-dimensional window into the phenotype. 
+### Gene Expression Profiles
 
-Let us imagine that we are considering two biologically distinct phenotypes; for example, human cardiomyocytes and human lung epithelial cells. Generally speaking, the ~20,000 protein-coding genes which are present in the genome of the cardiomyocytes are also present in the genome of the lung epithelial cells, but the expression of each gene is finely tuned according to each phenotype.
+In order to develop the theory of gene set analysis we will consider two hypothetical and biologically distinct phenotypes; we will refer to these as the test phenotype and the reference phenotype, respectively. 
 
-We can define the relative molar concentration of transcripts originating from the $gth$ gene in the $ith$ sample as follows:
+We may define the gene expression profile of the $ith$ sample as the vector $(x_{1},...,x_{G})_{i}$ where $x_{gi}$ is the relative molar concentration of the transcripts originating from the $gth$ gene in the $ith$ sample which is defined as follows:
 
 $$ x_{gi} = \frac{ t_{gi} }{ \sum_{g=1}^{G} t_{gi} } $$
 
-where $t_{gi}$ is the number of transcripts originating from the $gth$ gene in the $ith$ sample. [Wagner et al.](https://pubmed.ncbi.nlm.nih.gov/22872506/) do an excellent job of clarifying the why relative molar concentration is the closest that RNA sequencing and other transcriptomic technologies can get to the true expression of a gene without measuring the absolute number of transcripts in a sample.
+where $t_{gi}$ is the number of transcripts originating from the $gth$ gene in the $ith$ sample. In their 2012 paper, [Wagner et al.](https://pubmed.ncbi.nlm.nih.gov/22872506/) clarify why the relative molar concentration is the closest that RNA sequencing and other transcriptomic technologies can get to the true expression of a gene without measuring the absolute number of transcripts in a sample. By definition, $\sum_{g = 1}^{G} x_{gi} = 1$ and $x_{gi} \in [0,1]$.
 
-Using this language, we can define the gene expression profile of the $ith$ sample as the real-valued vector $(x_{1},...,x_{G})_{i}$ where $x_{gi} \in [0,1]$.  
+Let us assume that the $ith$ sample is independently drawn from the test phenotype. Then $(x_{g})_{i}$, the gene expression profiles of the $ith$ sample, is a realization of $(X_{g})_{T}$, the gene expression profile random vector for the test phenotype. The probability density function for $(X_{g})_{T}$ completely describes the likelihood that a sample from the test phenotype will have a particular gene expression profile. 
+
+Similarly, let us assume that the $jth$ sample is independently drawn from the reference phenotype. Then $(x_{g})_{j}$, the gene expression profiles of the $jth$ sample, is a realization of $(X_{g})_{R}$, the gene expression profile random vector for the reference phenotype. The probability density function for $(X_{g})_{R}$ completely describes the likelihood that a sample from the reference phenotype will have a particular gene expression profile. 
+
+We define two biological phenotypes to be equivalent if and only if the probability density functions for their phenotype-specific gene expression profile random vectors are equivalent. 
+
+### Gene Expression Signatures
+
+Let $X_{gT}$ be a random variable representing the relative molar concentration for transcripts originating from the $gth$ gene in the test phenotype. Similarly, let $X_{gR}$ be a random variable representing the relative molar concentration for transcripts originating from the $gth$ gene in the reference phenotype.
+
+Let the vector $(Z_{g})_{TR}$ be the gene expression signature between the test phenotype and the reference phenotype. Conceptually, $Z_{gTR}$, the gene expression signature value for the $gth$ gene between the test phenotype and the reference phenotype, quantifies the degree to which the relative molar concentration of the $gth$ gene in the test phenotype stochastically dominates the relative molar concentration of the $gth$ gene in the reference phenotype. Numerically, $Z_{gTR}$ is assumed to have the following properties: 
+
+
+For example, if the $gth$ gene is always highly expressed in the test phenotype and is epigenetically silenced in the reference phenotype, $Z_{gTR}$ should be very large. 
+
+
 
 ## Installing NaRnEA
 
-The NaRnEA R package can be installed from the [Califano Lab github](https://github.com/califano-lab/NaRnEA) using the $devtools$ R package with the following code.
+The NaRnEA R package can be installed from the [Califano Lab github](https://github.com/califano-lab/NaRnEA) using the `devtools` R package with the following code.
 ```{r, eval = FALSE}
 devtools::install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRUE)
 ```
