@@ -53,7 +53,7 @@ synthetic.ges <- runif(n = gene.num, min = null.ges.min, max = null.ges.max)
 names(synthetic.ges) <- paste("g",1:length(synthetic.ges),"",sep = "_")
 ```
 
-Now let's create a gene set by randomly selecting some genes from the gene expression signature; we'll go with 100 genes for now. Each gene in the gene set will need to be parameterized with a Mode of Regulation (tfmode) and a Regulation Confidence (likelihood) parmeter. NaRnEA will use these parameters to determine how the differential expression of each gene contribtes to the enrichment of the gene set in the gene expression signature
+Now let's create a gene set by randomly selecting some genes from the gene expression signature; we'll go with 100 genes for now. Each gene in the gene set will need to be parameterized with a Mode of Regulation (`tfmode`) and a Regulation Confidence (`likelihood`) parmeter. NaRnEA will use these parameters to determine how the differential expression of each gene contribtes to the enrichment of the gene set in the gene expression signature
 ```{r, eval = FALSE}
 gene.set.size <- 100
 gene.set.MoR.min <- -1
@@ -66,7 +66,7 @@ synthetic.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.
 names(synthetic.gene.set$tfmode) <- synthetic.gene.set.targets
 ```
 
-Because the members of this gene set were selected at random from the gene expression signature we know the null hypothesis of gene set analysis is true for this gene set (i.e. the gene set is not enriched in the gene expression signature). Let's check to see if NaRnEA agrees with this ground truth; we can test this numerically by calling the NaRnEA function directly or by using the visualization function EnrichmentAnalysisPlot.
+Because the members of this gene set were selected at random from the gene expression signature we know the null hypothesis of gene set analysis is true for this gene set (i.e. the gene set is not enriched in the gene expression signature). Let's check to see if NaRnEA agrees with this ground truth; we can test this numerically by calling the `NaRnEA` function directly or by using the `EnrichmentAnalysisPlot` visualization function.
 ```{r, eval = FALSE}
 NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 
@@ -76,7 +76,7 @@ EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_1.png", dpi = 500)
 ```
 
-The EnrichmentAnalysisPlot function was designed to allow users to get a sense of where the genes in the gene set are distributed in the gene expression signature in a manner that is sensitive to the Mode of Regulation and Regulation Confidence while returning the NaRnEA proportional enrichment score, normalized enrichment score, and two-sided p-value. Additionally, the EnrichmentAnalysisPlot function allows users to get a sense of the enrichment that earlier gene set analysis methods, like the two-sample Kolmogorov-Smirnov (KS) test or Gene Set Enrichment Analysis (GSEA), would have inferred for the gene set.
+The `EnrichmentAnalysisPlot` function was designed to allow users to get a sense of where the genes in the gene set are distributed in the gene expression signature in a manner that is sensitive to the Mode of Regulation and Regulation Confidence while returning the NaRnEA proportional enrichment score, normalized enrichment score, and two-sided p-value. Additionally, the `EnrichmentAnalysisPlot` function allows users to get a sense of the enrichment that earlier gene set analysis methods, like the two-sample Kolmogorov-Smirnov (KS) test or Gene Set Enrichment Analysis (GSEA), would have inferred for the gene set.
 
 We see from this analysis that the NaRnEA proportional enrichment score is close to zero, the normalized enrichment score has a small magnitude, and the two-sided p-value is not significant. Now let's modify the gene expression signature values for the genes in the gene set in order to explore the behavior of NaRnEA when the gene set is non-uniformly distributed in the gene expression signature
 ```{r, eval = FALSE}
@@ -115,7 +115,9 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
-ggsave(filename = "NaRnEA_User_Guide_1_Fig_4.png", device = "png", dpi = 500, path = "PNG_Figures")
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_4.png", dpi = 500)
+```
 
 ```{r, eval = FALSE}
 alt.ges.min <- 6
@@ -127,7 +129,7 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_4.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_5.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -140,7 +142,7 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_5.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_6.png", dpi = 500)
 ```
 
 NaRnEA performs exactly as we would expect, with a steadily increasing proportional enrichment score and consistently significant two-sided p-values. Let's double check if this behavior is observed for steadily decreasing negative enrichment.
@@ -154,7 +156,7 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_6.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_7.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -167,7 +169,7 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_7.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_8.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -180,7 +182,7 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_8.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_9.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -193,7 +195,7 @@ NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_9.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_10.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -207,7 +209,7 @@ EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 ```
 
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_10.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_11.png", dpi = 500)
 ```
 
 Once again, NaRnEA performs exactly as we would expect, with a steadily decreasing proportional enrichment score and consistently significant two-sided p-values. Finally, let's check if NaRnEA is able to overcome the GSEA, a previous gene set enrichment analysis which is overly sensitive to non-uniform distribution of gene sets in the gene expression signature. We can evaluate this by steadily restricting the distribution of gene set members until they are clumped together in the middle of the gene expression signature. For the visualization we'll set the score parameter to 1 to change the KS running sum statistic to a GSEA running sum statistic. We'll also precompute the GSEA null model using 5000 null gene sets randomly selected from the true gene set's complement.
@@ -233,7 +235,7 @@ EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, 
 ```
 
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_11.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_12.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -251,7 +253,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_12.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_13.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -269,7 +271,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_13.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_14.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -287,7 +289,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_14.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_15.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -305,7 +307,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_15.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_16.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -323,7 +325,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_16.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_17.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -341,7 +343,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_17.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_18.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -359,7 +361,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_18.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_19.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -377,7 +379,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_19.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_20.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -395,7 +397,7 @@ cur.subtitle <- paste("NaRnEA"," : ","PES = ",signif(cur.narnea.res$pes,3), " : 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.score = 1, cur.subtitle = cur.subtitle, cur.y.lab = "GSEA Running Sum Statistic")
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_20.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_21.png", dpi = 500)
 ```
 
 
@@ -443,7 +445,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_21.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_22.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -481,7 +483,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_22.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_23.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -519,7 +521,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_23.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_24.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -557,7 +559,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_24.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_25.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -595,7 +597,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_25.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_26.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -633,7 +635,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_26.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_27.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -671,7 +673,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_27.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_28.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -709,7 +711,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_28.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_29.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -747,7 +749,7 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_29.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_30.png", dpi = 500)
 ```
 
 ```{r, eval = FALSE}
@@ -785,8 +787,10 @@ cur.subtitle <- paste("NaRnEA", " : ","PES = ", signif(cur.narnea.res$pes,3), " 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, cur.subtitle = cur.subtitle)
 ```
 ```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_30.png", dpi = 500)
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_31.png", dpi = 500)
 ```
+
+
 
 
 
