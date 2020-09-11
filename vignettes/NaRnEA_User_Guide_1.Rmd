@@ -9,7 +9,7 @@ vignette: >
 
 ```{r, include = FALSE}
 library(knitr)
-opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(width.cutoff=55))
+opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(width.cutoff=50))
 ```
 
 ## Introduction
