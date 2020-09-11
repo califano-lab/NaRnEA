@@ -9,7 +9,7 @@ vignette: >
 
 ```{r, include = FALSE}
 library(knitr)
-opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(width.cutoff=50))
+opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(width.cutoff=55))
 ```
 
 ## Introduction
@@ -53,7 +53,7 @@ synthetic.ges <- runif(n = gene.num, min = null.ges.min, max = null.ges.max)
 names(synthetic.ges) <- paste("g",1:length(synthetic.ges),"",sep = "_")
 ```
 
-Now let's create a gene set by randomly selecting some genes from the gene expression signature; we'll go with 100 genes for now. Each gene in the gene set will need to be parameterized with a Mode of Regulation (`tfmode`) and a Regulation Confidence (`likelihood`) parmeter. NaRnEA will use these parameters to determine how the differential expression of each gene contribtes to the enrichment of the gene set in the gene expression signature
+Now let's create a gene set by randomly selecting some genes from the gene expression signature; we'll go with 100 genes for now. Each gene in the gene set will need to be parameterized with a Mode of Regulation (`tfmode`) and a Regulation Confidence (`likelihood`) parmeter. NaRnEA will use these parameters to determine how the differential expression of each gene contributes to the enrichment of the gene set in the gene expression signature
 ```{r, eval = FALSE}
 gene.set.size <- 100
 gene.set.MoR.min <- -1
@@ -212,7 +212,7 @@ EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
 knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_11.png", dpi = 500)
 ```
 
-Once again, NaRnEA performs exactly as we would expect, with a steadily decreasing proportional enrichment score and consistently significant two-sided p-values. Finally, let's check if NaRnEA is able to overcome the GSEA, a previous gene set enrichment analysis which is overly sensitive to non-uniform distribution of gene sets in the gene expression signature. We can evaluate this by steadily restricting the distribution of gene set members until they are clumped together in the middle of the gene expression signature. For the visualization we'll set the score parameter to 1 to change the KS running sum statistic to a GSEA running sum statistic. We'll also precompute the GSEA null model using 5000 null gene sets randomly selected from the true gene set's complement.
+Once again, NaRnEA performs exactly as we would expect, with a steadily decreasing proportional enrichment score and consistently significant two-sided p-values. Finally, let's compare the performance of NaRnEA with that of GSEA, a previous gene set enrichment analysis which is overly sensitive to non-uniform distribution of gene sets in the gene expression signature. We can evaluate this by steadily restricting the distribution of gene set members until they are clumped together in the middle of the gene expression signature. For the visualization we'll set the score parameter to 1 to change the KS running sum statistic to a GSEA running sum statistic. We'll also precompute the GSEA null model using 5000 null gene sets randomly selected from the true gene set's complement.
 ```{r, eval = FALSE}
 alt.ges.min <- -10
 alt.ges.max <- 10
@@ -790,7 +790,7 @@ EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set, 
 knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_31.png", dpi = 500)
 ```
 
-
+We see that the NaRnEA normalized enrichment score steadily increases when the gene set size is increased while the NaRnEA proportional enrichment score remains stable. The 95% non-parametric confidence interval for the NaRnEA proportional enrichment score becomes smaller as the gene set size increases. All of this behavior agrees well with the null hypothesis significance testing framework. Larger gene sets have a greate statistical power to reject the null hypothesis, which is correctly reflected in the size-dependence of the normalized enrichment score. Larger gene sets also afford a greater degree of precision when we estimate the proportional enrichment score, which is correctly reflected in the inverse dependence between the proportional enrichment score confidence interval width and the gene set size. As with all frequentist tests, both the test statistic (i.e. normalized enrichment score) and the effect size (i.e. proportional enrichment score) must be considered when evaluating the output of NaRnEA.
 
 
 
