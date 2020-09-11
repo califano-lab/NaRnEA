@@ -10,10 +10,8 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+library(knitr)
+opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(width.cutoff=70))
 ```
 
 ## Introduction
@@ -75,9 +73,79 @@ Because the members of this gene set were selected at random from the gene expre
 NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
-```{r, echo = FALSE}
-knitr::include_graphics(path = "../man/figures/Fig_2_1.png", dpi = 500)
 ```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_1.png", dpi = 500)
+```
+
+The EnrichmentAnalysisPlot function was designed to allow users to get a sense of where the genes in the gene set are distributed in the gene expression signature in a manner that is sensitive to the Mode of Regulation and Regulation Confidence while returning the NaRnEA proportional enrichment score, normalized enrichment score, and two-sided p-value. Additionally, the EnrichmentAnalysisPlot function allows users to get a sense of the enrichment that earlier gene set analysis methods, like the two-sample Kolmogorov-Smirnov (KS) test or Gene Set Enrichment Analysis (GSEA), would have inferred for the gene set.
+
+We see from this analysis that the NaRnEA proportional enrichment score is close to zero, the normalized enrichment score has a small magnitude, and the two-sided p-value is not significant. Now let's modify the gene expression signature values for the genes in the gene set in order to explore the behavior of NaRnEA when the gene set is non-uniformly distributed in the gene expression signature
+```{r, eval = FALSE}
+alt.ges.min <- 0
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_2.png", dpi = 500)
+```
+
+We've simulated a new value for each gene in the gene set in agreement with each gene's Mode of Regulation which corresponds with the positive alternative hypothesis of gene set analysis. Based on the NaRnEA two-sided p-value we correctly reject the null hypothesis in favor of the positive alternative hypothesis based on the sign of the proportional enrichment score. Now let's steadily increase the enrichment of the gene set and see how NaRnEA picks up on this.
+```{r, eval = FALSE}
+alt.ges.min <- 2
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_3.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- 4
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+ggsave(filename = "NaRnEA_User_Guide_1_Fig_4.png", device = "png", dpi = 500, path = "PNG_Figures")
+
+```{r, eval = FALSE}
+alt.ges.min <- 6
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_4.png", dpi = 500)
+```
+
+```{r, eval = FALSE}
+alt.ges.min <- 8
+alt.ges.max <- 10
+synthetic.ges[match(names(synthetic.gene.set$tfmode),names(synthetic.ges))] <- runif(n = length(synthetic.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(synthetic.gene.set$tfmode)
+
+NaRnEA(ges = synthetic.ges, regulon = synthetic.gene.set)
+
+EnrichmentAnalysisPlot(cur.ges = synthetic.ges, cur.regul = synthetic.gene.set)
+```
+```{r, echo = FALSE}
+knitr::include_graphics(path = "../man/figures/NaRnEA_User_Guide_1_Fig_5.png", dpi = 500)
+```
+
+
 
 
 
