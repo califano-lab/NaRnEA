@@ -1,8 +1,6 @@
 ---
 title: "NaRnEA - User Guide Part 1"
 output: rmarkdown::html_vignette
-theme: united
-highlight: tango
 vignette: >
   %\VignetteIndexEntry{NaRnEA - User Guide Part 1}
   %\VignetteEngine{knitr::rmarkdown}
