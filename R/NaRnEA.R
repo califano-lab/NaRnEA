@@ -160,8 +160,10 @@ NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
     return(cur.res.list)
   } else if(cur.final.nes > 0){
     cur.final.pes <- (cur.final.nes) / abs(cur.final.nes.max)
+    cur.final.pes <- min(c(1, cur.final.pes))
   } else {
     cur.final.pes <- (cur.final.nes) / abs(cur.final.nes.min)
+    cur.final.pes <- max(c(-1, cur.final.pes))
   }
   
   # computing the leading edge p-values for the gene set if desired
