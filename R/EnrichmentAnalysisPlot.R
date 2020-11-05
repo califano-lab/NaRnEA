@@ -21,7 +21,7 @@
 #' @param sig.lwd The linewidth for the vertical lines denoting the location of each gene set member in the gene expression signature.
 #' @return This function returns the NaRnEA PES, NES, and two-sided p-value for the enrichment of the gene set in the gene expression signature as well as a figure made with ggplot2 that visualizes the enrichment of the gene set in the gene expression signature using the two-sample Kolmogorov Smirnov running sum statistic (if cur.score = 0) or the GSEA running sum statistic (if cur.score = 1).
 #' @export
-EnrichmentAnalysisPlot <- function(cur.ges, cur.regul, cur.minsize = 30, cur.score = 0, cur.seed = 1, non.parametric = TRUE, cur.title = "Non-parametric Analytical Rank-based Enrichment Analysis", cur.subtitle = NULL, cur.x.lab = "Gene Expression Signature", cur.y.lab = "KS Running Sum Statistic", title.font.size = 22, subtitle.font.size = 20, axis.title.font.size = 18, axis.text.font.size = 15, positive.color = "red1", middle.color = "grey40", negative.color = "blue1", enrich.lwd = 1, mid.bar.lwd = 1, black.bar.lwd = .75, sig.lwd = .85){
+EnrichmentAnalysisPlot <- function(cur.ges, cur.regul, cur.minsize = 30, cur.score = 0, cur.seed = 1, non.parametric = TRUE, cur.title = "Non-parametric Analytical Rank-based Enrichment Analysis", cur.subtitle = NULL, cur.x.lab = "Gene Expression Signature", cur.y.lab = "KS Running Sum Statistic", title.font.size = 25, subtitle.font.size = 22, axis.title.font.size = 20, axis.text.font.size = 18, positive.color = "red1", middle.color = "grey40", negative.color = "blue1", enrich.lwd = 1, mid.bar.lwd = 1, black.bar.lwd = .75, sig.lwd = .85){
 	
 	# set the seed
 	set.seed(cur.seed)
