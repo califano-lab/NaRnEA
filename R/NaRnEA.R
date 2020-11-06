@@ -187,7 +187,7 @@ NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
         return(cur.gene.ledge.p.value)
       })
     }
-    cur.final.ledge <- cur.gene.ledge.p.value
+    cur.final.ledge <- cur.ledge.p.values
   } else {
     cur.final.ledge <- NA
   }
