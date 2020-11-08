@@ -35,6 +35,8 @@ EnrichmentAnalysisPlot(
 
 \item{cur.minsize}{Minimum number of gene set members that are present in the gene expression signature. Default of 30.}
 
+\item{cur.seed}{Exponentiation value for the KS running sum statistic; GSEA running sum statistic is shown if set to 1. Default of 0.}
+
 \item{cur.seed}{Random number generator seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.}
 
 \item{cur.title}{The text for the main title.}
