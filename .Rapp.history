@@ -1,0 +1,319 @@
+cur.mat <- matrix(data = c(1/8,1/16,1/32,1/32,1/16,1/8,1/32,1/32,1/16,1/16,1/16,1/16,1/4,0,0,0), nrow = 4, byrow = TRUE)
+cur.mat
+sum(cur.mat)
+rowSums(cur.mat)
+rowSums(cur.mat)*log(rowSums(cur.mat))
+sum(rowSums(cur.mat)*log(rowSums(cur.mat)))
+-1*sum(rowSums(cur.mat)*log(rowSums(cur.mat)))
+-1*sum(colSums(cur.mat)*log(colSums(cur.mat)))
+log(cur.mat)
+?log
+cur.mat*log(cur.mat)
+sum(cur.mat*log(cur.mat), na.rm = TRUE)
+-1*sum(cur.mat*log(cur.mat), na.rm = TRUE)
+cur.mat
+colSum(cur.mat)
+colSums(cur.mat)
+cur.mat/colSums(cur.mat)
+cur.mat/matrix(data = colSums(cur.mat), nrow = 4, byrow = TRUE)
+matrix(data = colSums(cur.mat), nrow = 4, byrow = TRUE)
+matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)
+cur.mat/matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)
+cur.mt
+cur.mat
+cur.mat/matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)
+colSums(cur.mat)
+cur.mat
+colSums(cur.mat)
+cur.mat/matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)
+cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)
+cur.mat
+rowSums(cur.mat)
+cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)
+log(cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE))
+cur.mat*log(cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE))
+sum(cur.mat*log(cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)))
+sum(cur.mat*log(cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)), na.rm = TRUE)
+-1*sum(cur.mat*log(cur.mat/matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)), na.rm = TRUE)
+-1*sum(cur.mat*log(cur.mat/matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)), na.rm = TRUE)
+1.386294 + 0.9530774
+1.213008 + 1.126364
+matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE))
+matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)
+matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)*matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)
+(matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)*matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE))
+log(cur.mat/(matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)*matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)))
+cur.mat*log(cur.mat/(matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)*matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE)))
+sum(cur.mat*log(cur.mat/(matrix(data = colSums(cur.mat), nrow = 4, ncol = 4, byrow = TRUE)*matrix(data = rowSums(cur.mat), nrow = 4, ncol = 4, byrow = FALSE))), na.rm = TRUE)
+exp(1.5)
+exp(1)*.5
+exp(2)/2
+exp(2)/2 + exp(1)/2
+quartz(width = 13, height = 12, dpi = 72)
+cur.a.value.list <- lapply(1:1E3,function(i){return(runif(n = 100))})
+cur.b.value.list <- lapply(1:1E3,function(i){return(runif(n = 100))})
+cur.a.value.list
+cur.x.value.list <- sapply(1:1E3,function(i){return(sum(cur.a.value.list[[i]]*log(cur.a.value.list[[i]]/cur.b.value.list[[i]])))})
+cur.x.values
+cur.x.value.list
+cur.y.value.list <- sapply(1:1E3,function(i){return(sum(cur.a.value.list[[i]])*log(sum(cur.a.value.list[[i]])/sum(cur.b.value.list[[i]])))})
+cur.y.value.list
+plot(cur.x.value.list,cur.y.value.list)
+wilcox.test(cur.x.value.list,cur.y.value.list)
+wilcox.test(cur.x.value.list,cur.y.value.list)$estimate
+plot(density(cur.x.value.list - cur.y.value.list))
+cor.test(x = c(1,2,3), y = c(1,2,3))
+cor.test(x = c(1,2,3), y = c(1,2,3), method = "spearman")
+(800*3.06) + (300*6.41_)
+(800*3.06) + (300*6.41)
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+cur.rep.num <- 5
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+quartz(width = 13, height = 12, dpi = 72)
+plot(cur.final.values)
+plot(density(cur.final.values))
+qqnorm(cur.final.values)
+cur.rep.num <- 2
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+qqnorm(cur.final.values)
+shapiro.test(cur.final.values)
+cur.rep.num <- 15
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+> cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+> cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)sqrt(cur.rep.num/12) )})
+> cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+shapiro.test(cur.final.values)
+qqnorm(cur.final.values)
+cur.rep.num <- 30
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+shapiro.test(cur.final.values)
+qqnorm(cur.final.values)
+cur.rep.num <- 100
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+shapiro.test(cur.final.values)
+qqnorm(cur.final.values)
+cur.rep.num <- 100
+cur.sim.values <- lapply(1:5E3,function(i){return(runif(n = cur.rep.num))})
+cur.final.values <- sapply(cur.sim.values,function(x){return( (sum(x) - cur.rep.num*.5)/sqrt(cur.rep.num/12) )})
+shapiro.test(cur.final.values)
+qqnorm(cur.final.values)
+paste(sample(0:10,size = 6,replace = TRUE), collapse = "")
+library(devtools)
+library(BiocManager)
+install("devtools")
+install_github("califano-lab/NaRnEA")
+library(devtools)
+install_github("califano-lab/NaRnEA")
+?install_github
+install_github(repo = "califano-lab/NaRnEA", auth_token = "25fa79a6847c853f310a01dcfe173091ccb3400a")
+library(NaRnEA)
+?GSEA
+??GSEA
+??NaRnEA
+devtools:install_github("califano-lab/NaRnEA")
+devtools::install_github("califano-lab/NaRnEA")
+library(devtools)
+install_github(repo = "califano-lab/NaRnEA", auth_token = "25fa79a6847c853f310a01dcfe173091ccb3400a")
+library(NaRnEA)
+ls()
+?NaRnEA
+library(devtools)
+install_github(repo = "califano-lab/NaRnEA", auth_token = "25fa79a6847c853f310a01dcfe173091ccb3400a")
+library(NaRnEA)
+# set the simulation parameters#
+sim.seed <- 11#
+#
+gene.num <- 20000#
+#
+sample.num <- 5000#
+#
+null.ges.min <- -10#
+null.ges.max <- 10#
+#
+alt.ges.min <- -10#
+alt.ges.max <- 10#
+#
+gene.set.size <- 100#
+gene.set.RC.min <- 0#
+gene.set.RC.max <- 1#
+gene.set.MoR.min <- -1#
+gene.set.MoR.max <- 1
+set.seed(sim.seed)
+cur.ges.mat <- matrix(data = NA, nrow = gene.num, ncol = sample.num)
+# set the seed for the simulation #
+set.seed(sim.seed)#
+#
+# simulate the gene expression signature values for all genes in the different samples#
+cur.ges.mat <- matrix(data = NA, nrow = gene.num, ncol = sample.num)#
+cur.ges.mat <- apply(cur.ges.mat,2,function(x){#
+	y <- runif(n = length(x), min = null.ges.min, max = null.ges.max)#
+	return(y)#
+})
+# load the NaRnEA package and ggplot2 for plotting#
+library(NaRnEA)#
+library(ggplot2)#
+#
+# set the simulation parameters#
+sim.seed <- 11#
+#
+gene.num <- 2000#
+#
+sample.num <- 500#
+#
+null.ges.min <- -10#
+null.ges.max <- 10#
+#
+alt.ges.min <- -10#
+alt.ges.max <- 10#
+#
+gene.set.size <- 100#
+gene.set.RC.min <- 0#
+gene.set.RC.max <- 1#
+gene.set.MoR.min <- -1#
+gene.set.MoR.max <- 1#
+#
+# set the seed for the simulation #
+set.seed(sim.seed)#
+#
+# simulate the gene expression signature values for all genes in the different samples#
+cur.ges.mat <- matrix(data = NA, nrow = gene.num, ncol = sample.num)#
+cur.ges.mat <- apply(cur.ges.mat,2,function(x){#
+	y <- runif(n = length(x), min = null.ges.min, max = null.ges.max)#
+	return(y)#
+})
+colnames(cur.ges.mat) <- paste("s",1:ncol(cur.ges.mat),"",sep = "_")
+rownames(cur.ges.mat) <- paste("g",1:nrow(cur.ges.mat),"",sep = "_")
+head(cur.ges.mat)
+cur.gene.set.targets <- sample(rownames(cur.ges.mat), size = gene.set.size)
+cur.gene.set.targets
+cur.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))
+cur.gene.set
+# randomly select some genes and construct the gene set#
+cur.gene.set.targets <- sample(rownames(cur.ges.mat), size = gene.set.size)#
+cur.gene.set <- list(tfmode = runif(n = gene.set.size, min = gene.set.MoR.min, max = gene.set.MoR.max), likelihood = runif(n = gene.set.size, min = gene.set.RC.min, max = gene.set.RC.max))#
+names(cur.gene.set$tfmode) <- cur.gene.set.targets
+cur.gene.set
+alt.ges.min <- 5#
+alt.ges.max <- 10
+# modulate the gene expression signature values for the members of the gene set#
+mod.ges.mat <- apply(cur.ges.mat,2,function(x){#
+	y <- x#
+	y[match(names(cur.gene.set$tfmode),names(x))] <- runif(n = length(cur.gene.set$tfmode), min = alt.ges.min, max = alt.ges.max)*sign(as.numeric(cur.gene.set$tfmode))#
+	return(y)#
+})
+head(mod.ges.mat)
+plot(as.numeric(cur.ges.mat[names(cur.gene.set$tfmode),]),as.numeric(mod.ges.mat[names(cur.gene.set$tfmode),]))
+quartz(width = 13, height = 12, dpi = 72)
+plot(as.numeric(cur.ges.mat[names(cur.gene.set$tfmode),]),as.numeric(mod.ges.mat[names(cur.gene.set$tfmode),]))
+head(mod.ges.mat)
+dimnames(mod.ges.mat)
+identical(dimnames(mod.ges.mat),dimnames(cur.ges.mat))
+library(NaRnEA)
+?NaRnEA
+# compute the enrichment of the gene set in each gene expression signature using NaRnEA#
+cur.gene.set.enrichment <- t(apply(cur.ges.mat,2,function(cur.ges){#
+	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.gene.set, seed = 1, leading.edge = FALSE))#
+	return(y)#
+}))
+NaRnEA
+library(NaRnEA)
+?GSEA
+NaRnEA()
+y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.gene.set, seed = 1, leading.edge = FALSE))
+cur.mat <- c(data = c(12,8,16,7), nrow = 2, byrow = FALSE)
+cur.mat
+cur.mat <- matrix(data = c(12,8,16,7), nrow = 2, ncol = 2, byrow = FALSE)
+cur.mat
+rownames(cur.mat) <- c()
+rownames(cur.mat) <- c("Hit","Miss")
+colnames(cur.mat) <- c("Jacob", "Daniel")
+cur.mat
+fisher.test(x = as.table(cur.mat), alternative = "less")
+binom.test(x = 12, n = 20, p = .5)
+binom.test(x = 12, n = 20, p = .5, alternative = "greater")
+cur.mat <- matrix(data = c(13,7,12,8), nrow = 2, byrow = FALSE)
+?cur.mat
+?matrix
+cur.mat <- matrix(data = c(13,7,12,8), nrow = 2, byrow = FALSE, dimnames = list(c("Hit","Miss"),c("Daniel","Jacob")))
+cur.mat
+cur.mat <- matrix(data = c(16,6,12,8), nrow = 2, byrow = FALSE, dimnames = list(c("Hit","Miss"),c("Daniel","Jacob")))
+cur.mat
+fisher.test(as.table(cur.mat), alternative = "greater")
+(16*8)/(6*8)
+(16*8)/(6*12)
+cur.mat <- matrix(data = c(16,6,11,12), nrow = 2, byrow = FALSE, dimnames = list(c("Hit","Miss"),c("Daniel","Aaron")))
+curµat
+as.table(cur.mat)
+fisher.test(as.table(cur.mat), alternative = "greater")
+cur.mat <- matrix(data = c(16,6,7,13), nrow = 2, byrow = FALSE, dimnames = list(c("Hit","Miss"),c("Daniel","Jonathan")))
+as.table(cur.mat)
+fisher.test(as.table(cur.mat), alternative = "greater")
+cur.mat <- matrix(data = c(12,8,7,13), nrow = 2, byrow = FALSE, dimnames = list(c("Hit","Miss"),c("Jacob","Jonathan")))
+as.table(cur.mat)
+fisher.test(as.table(cur.mat), alternative = "greater")
+496/2
+cur.data <- matrix(data = c(100,0,3,0), nrow = 2, ncol = 2, byrow = TRUE, dimnames = list(c("pos","neg"),c("sick","fine")))
+cur.data
+cur.data <- matrix(data = c(0,3,103,14), nrow = 2, ncol = 2, byrow = TRUE, dimnames = list(c("pos","neg"),c("sick","fine")))
+cur.data
+fisher.test(x = as.table(cur.data), alternative = "less")
+fisher.test(x = as.table(cur.data), alternative = "less")$p.value
+1/fisher.test(x = as.table(cur.data), alternative = "less")$p.value
+1500/60
+tmp <- readRDS(file = "/Volumes/ATG_4TB_HD/ATG_CRISPR/081120/REP_1_Time_24_Lane_2/final_alignment_results.rds")
+length(tmp)
+length(tmp)/1E6
+cur.forward.p.values <- sapply(tmp,function(x){return(x[1])})
+cur.reverse.p.values <- sapply(tmp,function(x){return(x[2])})
+cur.forward.fdr.values <- p.adjust(p = cur.forward.p.values, method = "BH")
+cur.reverse.fdr.values <- p.adjust(p = cur.reverse.p.values, method = "BH")
+mean(cur.forward.fdr.values < .05)
+mean(cur.reverse.fdr.values < .05)
+mean((cur.forward.fdr.values < .05 & cur.reverse.fdr.values < .05))
+cur.value <- pexp(q = 0, lower.tail = FALSE)
+cur.value
+tmp.values <- rexp(n = 50)
+tmp.p.values <- pexp(q = tmp.values,lower.tail = FALSE)
+tmp.p.values
+tmp.p.values <- pexp(q = tmp.values,lower.tail = TRUE)
+tmp.z.scores <- qnorm(p = tmp.p.values, lower.tail = TRUE)
+tmp.z.socres
+plot(density(tmp.z.scores))
+shapiro.test(tmp.z.scores)
+cur.stouffer.value <- sum(tmp.z.scores)/sqrt(length(tmp.z.scores))
+cur.griffin.value <- sum(tmp.z.scores)/(length(tmp.z.scores))
+cur.stouffer.value
+cur.griffin.value
+cur.interactome <- interactomes::getInteractome("luad")
+library(viper)
+cur.interactome <- interactomes::getInteractome("luad")
+cur.interactome["6932"]
+cur.n.value <- 100
+cur.x.values <- seq(from = 0, to = 1, by = 1E-3)
+quartz(width = 13, height = 12, dpi = 72)
+cur.y.values <- log((cur.x.values*cur.n.value^2 + (1-cur.x.values)*cur.n.value))/log(cur.n.value)
+plot(cur.x.values,cur.y.values)
+tmp <- readRDS(file = "/Volumes/ATG_4TB_HD/ATG_PLATESeq_Project/031820/PlateSeq_PDA_Barcodes.rds")
+tmp
+41*.75
+14*.75
+48*.75
+24*.75
+binom.test(x = 61, n = 1000, p = .05, alternative = "greater")
+binom.test(x = round(.0506*5000), n = 5000, p = .05, alternative = "greater")
+(24*4) + 4 + 8
+choose(8,3)*choose(100,7)
+lchoose(8,3) + lchoose(100,7) - lchoose(108,10)
+exp(lchoose(8,3) + lchoose(100,7) - lchoose(108,10))
+exp((lchoose(8,3) + lchoose(100,7) - lchoose(108,10)))
+library(devtools)
+?document
+setwd("/Volumes/ATG_4TB_HD/ATG_NARNEA_Project/NaRnEA_Github_Package/NaRnEA")
+ls
+list.files()
+document()

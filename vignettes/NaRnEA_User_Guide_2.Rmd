@@ -1,8 +1,8 @@
 ---
-title: "NaRnEA User Guide - Part 1"
+title: "NaRnEA User Guide - Part 2"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{NaRnEA User Guide - Part 1}
+  %\VignetteIndexEntry{NaRnEA User Guide - Part 2}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,4 +17,3 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(NaRnEA)
 ```
-
