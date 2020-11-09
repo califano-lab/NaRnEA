@@ -469,7 +469,21 @@ ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.b
 
 ![](../man/figures/Fig_2_7.png){#id .class width=100% height=100%}
 
-When the null hypothesis is true, the `NaRnEA` two-sided p-values should be uniformly distributed on the interval [0,1], producing an empirical cumulative distribution function which tracks along the diagonal of the plot (black dashed line). We see that the `NaRnEA` two-sided p-values for the enrichment of the ARACNe-inferred regulon gene sets in the LUAD vs. LUNG gene expression signature fall above that line, which is what we would expect if the null hypothesis is not true for some subset of these regulon gene sets. We also see that the `NaRnEA` two-sided p-values for the enrichment of the ARACNe-inferred regulon gene sets in the LUAD vs. LUNG gene expression signature fall above that line, which is what we would expect if the null hypothesis is not true for some subset of these regulon gene sets.
+When the null hypothesis is true, the `NaRnEA` two-sided p-values should be uniformly distributed on the interval [0,1], producing an empirical cumulative distribution function which tracks along the diagonal of the plot (black dashed line). 
+
+We see that the `NaRnEA` two-sided p-values for the enrichment of the ARACNe-inferred regulon gene sets in the LUAD vs. LUNG gene expression signature fall above the diagonal, which is what we would expect if the alternative hypothesis is true for some subset of these regulon gene sets. More than 50% of these two-sided p-values are statistically significant without correction for multiple hypothesis testing (p < 0.05). This number drops slightly to 47.8% (FDR < 0.05) and 31.7% (FWER < 0.05) depending on whether we want to correct for multiple hypothesis testing using the Benjamini-Hochberg method or the Bonferroni method.
+
+We see that the `NaRnEA` two-sided p-values for the enrichment of the ARACNe-inferred regulon gene sets in the shuffled LUAD vs. LUNG gene expression signature fall almost directly on the diagonal, which is what we would expect if the null hypothesis were true for all of the regulon gene sets. Only than 5% of these two-sided p-values are statistically significant without correction for multiple hypothesis testing (p < 0.05). This number drops slightly to 0% (FDR < 0.05) and 0% (FWER < 0.05) depending on whether we want to correct for multiple hypothesis testing using the Benjamini-Hochberg method or the Bonferroni method.
+
+We see that the `NaRnEA` two-sided p-values for the enrichment of the shuffled regulon gene sets in the LUAD vs. LUNG gene expression signature fall almost directly on the diagonal; in fact, for (p < 0.25), the eCDF falls slightly above the diagnoal, which is what we would expect if the alternative hypothesis was true for a small number of these regulon gene sets. This is to be expected; during the regulon gene set member shuffling procedure it is highly likely that at least a few of the shuffled regulon gene sets contain members which demonstrate biological coregulation. Less than 6% of these two-sided p-values are statistically significant without correction for multiple hypothesis testing (p < 0.05). This number drops slightly to 0% (FDR < 0.05) and 0% (FWER < 0.05) depending on whether we want to correct for multiple hypothesis testing using the Benjamini-Hochberg method or the Bonferroni method. 
+
+## Post-Hoc Gene Set Analysis with NaRnEA
+
+Now that we have identified some putative Master Regulators of the LUAD phenotype with respect to its tissue of origin (i.e. LUNG), we can leverage the various post-hoc analysis features that `NaRnEA` offers to deepen our understanding of these transcriptional regulatory proteins.
+
+Both FOXM1 and CENPF, two transcription factors, have been implicated as Master Regulators of prostate cancer ([link](https://pubmed.ncbi.nlm.nih.gov/24823640/)), an epithelial malignancy that arises in the prostate. The ARACNe-inferred regulon gene sets for these proteins are significantly enriched in the LUAD vs. LUNG gene expression signature, suggesting they may also act as Master Regulators of the LUAD phenotype. We'll concern our post-hoc analysis with these two proteins. 
+
+First, we'll visualize the enrichment of the FOXM1 regulon gene set in the LUAD vs. LUNG gene expression signature with the `EnrichmentAnalysisPlot` function included in the `NaRnEA` package. We'll estimate an approximate 95% confidence interval for the `NaRnEA` PES using the percentile bootstrap method.  
 
 ```{r, eval = FALSE}
 # visualize the enrichment of the regulon gene set for FOXM1 in the LUAD vs. LUNG gene expression signature with an approximate 95% confidence interval inferred with the bootstrap percentile method
@@ -505,6 +519,10 @@ EnrichmentAnalysisPlot(cur.ges = real.luad.vs.lung.ges, cur.regul = true.regulon
 
 ![](../man/figures/Fig_2_8.png){#id .class width=100% height=100%}
 
+Based on the two-sided p-value computed from the `NaRnEA` NES value we reject the null hypothesis of gene set analysis for the FOXM1 regulon gene set and conclude that the FOXM1 regulon gene set is positively enriched in the LUAD vs. LUNG gene expression signature (PES > 0).  
+
+Next, we'll visualize the enrichment of the CENPF regulon gene set in the LUAD vs. LUNG gene expression signature with the `EnrichmentAnalysisPlot` function included in the `NaRnEA` package. We'll estimate an approximate 95% confidence interval for the `NaRnEA` PES using the percentile bootstrap method. 
+
 ```{r, eval = FALSE}
 # visualize the enrichment of the regulon gene set for CENPF in the LUAD vs. LUNG gene expression signature with an approximate 95% confidence interval inferred with the bootstrap percentile method
 set.seed(sim.seed)
@@ -539,10 +557,13 @@ EnrichmentAnalysisPlot(cur.ges = real.luad.vs.lung.ges, cur.regul = true.regulon
 
 ![](../man/figures/Fig_2_9.png){#id .class width=100% height=100%}
 
-```{r, eval = FALSE}
-## Permutation Test for Equality of FOXM1 and CENFP regulon gene set enrichment
+Based on the two-sided p-value computed from the `NaRnEA` NES value we reject the null hypothesis of gene set analysis for the CENPF regulon gene set and conclude that the CENPF regulon gene set is positively enriched in the LUAD vs. LUNG gene expression signature (PES > 0). 
 
-# assign the FOXM1 regulon gene set as gene set a and the CENPF regulon gene set as gene set b
+We also note that the approximate 95% confidence interval for the FOXM1 PES does not overlap with the approximate 95% confidence interval for the CENPF PES. This suggests that the CENPF regulon gene set is more strongly enriched in the LUAD vs. LUNG gene expression signature than the FOXM1 regulon gene set.
+
+To test this hypothesis we can use the approximate permutation test of gene set enrichment equality that we developed in Part 1 of the `NaRnEA` User Guide. We'll permute the members of each gene set in order to estimate the null distribution for the absolute difference in PES values and compare the true absolute difference in PES values with this approximate null distribution. 
+
+```{r, eval = FALSE}
 cur.hugo.name <- "FOXM1"
 cur.entrez.name <- paste("g",names(sort(table(entrez.to.hugo.data[which(entrez.to.hugo.data$gene == cur.hugo.name),"entrez"]), decreasing = TRUE))[1],"",sep = "_")
 synthetic.gene.set.a <- true.regulon.list[[cur.entrez.name]]
@@ -553,13 +574,10 @@ cur.entrez.name <- paste("g",names(sort(table(entrez.to.hugo.data[which(entrez.t
 synthetic.gene.set.b <- true.regulon.list[[cur.entrez.name]]
 gene.set.b.size <- length(synthetic.gene.set.b$tfmode)
 
-# check to see how much the regulon gene sets overlap
 length(intersect(names(synthetic.gene.set.a$tfmode),names(synthetic.gene.set.b$tfmode)))
 
-# combine the gene sets to create a single gene set
 synthetic.gene.set.c <- list(tfmode = c(synthetic.gene.set.a$tfmode, synthetic.gene.set.b$tfmode), likelihood = c(synthetic.gene.set.a$likelihood, synthetic.gene.set.b$likelihood))
 
-# create permutations of the synthetic gene sets
 set.seed(sim.seed)
 
 gene.set.a.per <- 5000
@@ -576,7 +594,6 @@ synthetic.gene.set.b.null.idx.list <- lapply(1:gene.set.a.per,function(i){
 })
 names(synthetic.gene.set.b.null.idx.list) <- paste("nb",1:length(synthetic.gene.set.b.null.idx.list),"",sep = "_")
 
-# compute the enrichment of the original gene sets and the permuted gene sets in the real LUAD vs. LUNG gene expression signature
 synthetic.gene.set.a.enrichment <- NaRnEA(ges = real.luad.vs.lung.ges, regulon = synthetic.gene.set.a)
 
 synthetic.gene.set.a.null.enrichment <- t(sapply(synthetic.gene.set.a.null.idx.list,function(sub.idx){
@@ -593,7 +610,6 @@ synthetic.gene.set.b.null.enrichment <- t(sapply(synthetic.gene.set.b.null.idx.l
 	return(sub.res)
 }))
 
-# visualize the results
 plot.data <- data.frame(x.values = abs(synthetic.gene.set.a.null.enrichment[,"pes"] - synthetic.gene.set.b.null.enrichment[,"pes"]))
 
 x.min <- 0
@@ -619,11 +635,12 @@ ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.b
 
 ![](../man/figures/Fig_2_10.png){#id .class width=100% height=100%}
 
+From this analysis we find that the true absolute difference in PES values between the FOXM1 regulon gene set and the CENPF regulon gene set is (0.1). This value is greater than all but (0.44%) of the values in our approxiamte null distribution which we estimated using permutation of the regulon gene set members. We can interpret this number (0.0044) as our approximate two-sided p-value; based on this result we reject the null hypothesis that the FOXM1 regulon gene set and CENPF regulon gene set are equally enriched in the LUAD vs. LUNG gene expression signature. 
+
+In the aforementioned publication ([link](https://pubmed.ncbi.nlm.nih.gov/24823640/)), FOXM1 and CENPF were not only identified as Master Regulators of aggressive prostate cancer, but it was determined experimentally that they acted in a synergistic manner to regulate the prostate cancer phenotype. In order to test the hypothesis that the FOXM1 and CENPF regulon gene sets interact we can use the approximate permutation test of gene set interaction that we developed in Part 1 of the `NaRnEA` User Guide. This test uses regulon gene set member permutation to determine whether the enrichment of the targets that are unique to each regulon gene set are distinct from the enrichment of any random subset of targets of equal size from each gene set. 
 
 ```{r, eval = FALSE}
-## Permutation Test for Interaction between the FOXM1 regulon gene set and the CENPF regulon gene set
 
-# assign the FOXM1 regulon gene set as gene set a and the CENPF regulon gene set as gene set b
 cur.hugo.name <- "FOXM1"
 cur.entrez.name <- paste("g",names(sort(table(entrez.to.hugo.data[which(entrez.to.hugo.data$gene == cur.hugo.name),"entrez"]), decreasing = TRUE))[1],"",sep = "_")
 synthetic.gene.set.a <- true.regulon.list[[cur.entrez.name]]
@@ -634,18 +651,14 @@ cur.entrez.name <- paste("g",names(sort(table(entrez.to.hugo.data[which(entrez.t
 synthetic.gene.set.b <- true.regulon.list[[cur.entrez.name]]
 gene.set.b.size <- length(synthetic.gene.set.b$tfmode)
 
-# identify target genes common to both regulon gene sets
 common.targets <- (intersect(names(synthetic.gene.set.a$tfmode),names(synthetic.gene.set.b$tfmode)))
 
-# create synthetic gene set c from the targets in synthetic gene set a (FOXM1) which are not present in synthetic gene set b (CENPF)
 synthetic.gene.set.c <- list(tfmode = synthetic.gene.set.a$tfmode[which(!(names(synthetic.gene.set.a$tfmode)%in%common.targets))], likelihood = synthetic.gene.set.a$likelihood[which(!(names(synthetic.gene.set.a$tfmode)%in%common.targets))])
 gene.set.c.size <- length(synthetic.gene.set.c$tfmode)
 
-# create synthetic gene set d from the targets in synthetic gene set b (CENPF) which are not present in synthetic gene set a (FOXM1)
 synthetic.gene.set.d <- list(tfmode = synthetic.gene.set.b$tfmode[which(!(names(synthetic.gene.set.b$tfmode)%in%common.targets))], likelihood = synthetic.gene.set.b$likelihood[which(!(names(synthetic.gene.set.b$tfmode)%in%common.targets))])
 gene.set.d.size <- length(synthetic.gene.set.d$tfmode)
 
-# compute the empirical null distribution for the enrichment of gene set c in the gene expression signature using permutations
 set.seed(sim.seed)
 
 gene.set.c.per <- 5000
@@ -670,7 +683,6 @@ synthetic.gene.set.c.q.value <- (sum(synthetic.gene.set.c.null.enrichment[,"pes"
 synthetic.gene.set.c.z.value <- qnorm(p = synthetic.gene.set.c.q.value, lower.tail = TRUE)
 synthetic.gene.set.c.p.value <- 2*pnorm(q = abs(synthetic.gene.set.c.z.value), lower.tail = FALSE)
 
-# compute the empirical null distribution for the enrichment of gene set d in the gene expression signature using permutations
 set.seed(sim.seed)
 
 gene.set.d.per <- gene.set.c.per
@@ -695,7 +707,6 @@ synthetic.gene.set.d.q.value <- (sum(synthetic.gene.set.d.null.enrichment[,"pes"
 synthetic.gene.set.d.z.value <- qnorm(p = synthetic.gene.set.d.q.value, lower.tail = TRUE)
 synthetic.gene.set.d.p.value <- 2*pnorm(q = abs(synthetic.gene.set.d.z.value), lower.tail = FALSE)
 
-# visualize the results
 plot.data <- data.frame(x.values = c(synthetic.gene.set.c.null.enrichment[,"pes"], synthetic.gene.set.d.null.enrichment[,"pes"]), group.values = c(rep("FOXM1 Diff", times = gene.set.c.per), rep("CENPF Diff", times = gene.set.d.per)))
 
 plot.data$group.values <- factor(plot.data$group.values, levels = c("FOXM1 Diff","CENPF Diff"))
@@ -725,10 +736,17 @@ ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom
 
 ![](../man/figures/Fig_2_11.png){#id .class width=100% height=100%}
 
-```{r, eval = FALSE}
-# Leading Edge Analysis for FOXM1 and CENPF
+From these data we find that the FOXM1 and CENPF regulon gene sets share a large number of targets (far more than would be expected by random chance based on the size of each regulon gene set). 
 
-# assign the FOXM1 regulon gene set as gene set a and the CENPF regulon gene set as gene set b
+The FOXM1 regulon gene set PES is (0.843), while the FOXM1 Diff regulon gene set PES, which includes the FOXM1 regulon gene set members which are not present in the CENPF regulon gene set, is (0.611). This value falls significantly outside of the approximate null distribution for the FOXM1 Diff regulon gene set which we estimated using permutations, indicating that those shared regulon gene set members contribute quite strongly to the FOXM1 regulon gene set enrichment (empirical p-value = 0.0004). 
+
+The CENPF regulon gene set PES is (0.943), while the CENPF Diff regulon gene set PES, which includes the CENPF regulon gene set members which are not present in the FOXM1 regulon gene set, is (0.808). This value falls significantly outside of the approximate null distribution for the CENPF Diff regulon gene set which we estimated using permutations, indicating that those shared regulon gene set members contribute quite strongly to the CENPF regulon gene set enrichment (empirical p-value = 0.0004). 
+
+Based on these results we conclude that the genes which are coregulated by FOXM1 and CENPF contribute more strongly to the enrichment of each regulon gene set than those genes which are unique to each regulon gene set (FWER < 0.05). One may interpret this result to suggest that FOXM1 and CENPF are acting synergistically as Master Regulators of the LUAD phenotype, although this hypothesis would certainly need to be evaluated experimentally. 
+
+As a final post-hoc inference we can leverage the `NaRnEA` leading edge analysis for the FOXM1 and CENPF regulon gene sets to identify those regulon gene set members which are contributing most strongly to the regulon gene set enrichment. The output of the `NaRnEA` leading edge analysis is a leading edge p-value for each member of the gene set which we'll convert to a z-score for our visualization.
+
+```{r, eval = FALSE}
 cur.hugo.name <- "FOXM1"
 cur.entrez.name <- paste("g",names(sort(table(entrez.to.hugo.data[which(entrez.to.hugo.data$gene == cur.hugo.name),"entrez"]), decreasing = TRUE))[1],"",sep = "_")
 synthetic.gene.set.a <- true.regulon.list[[cur.entrez.name]]
@@ -739,12 +757,10 @@ cur.entrez.name <- paste("g",names(sort(table(entrez.to.hugo.data[which(entrez.t
 synthetic.gene.set.b <- true.regulon.list[[cur.entrez.name]]
 gene.set.b.size <- length(synthetic.gene.set.b$tfmode)
 
-# compute the enrichment of each regulon gene set in the LUAD vs. LUNG gene expression signature with leading edge analysis
 gene.set.a.enrichment <- NaRnEA(ges = real.luad.vs.lung.ges, regulon = synthetic.gene.set.a, leading.edge = TRUE)
 
 gene.set.b.enrichment <- NaRnEA(ges = real.luad.vs.lung.ges, regulon = synthetic.gene.set.b, leading.edge = TRUE)
 
-# visualize the leading edge enrichment results 
 total.target.names <- unique(c(names(gene.set.a.enrichment$ledge),names(gene.set.b.enrichment$ledge)))
 common.target.names <- intersect(names(gene.set.a.enrichment$ledge),names(gene.set.b.enrichment$ledge))
 
@@ -778,6 +794,12 @@ ggplot(plot.data) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + face
 ```
 
 ![](../man/figures/Fig_2_12.png){#id .class width=100% height=100%}
+
+For this plot we've converted the `NaRnEA` leading edge p-values into z-scores based on the sign of the FOXM1 and CENPF regulon gene set PES values. We've also set the color of each gene based on whether the gene is present in the FOXM1 regulon gene set alone (red), the CENPF regulon gene set alone (blue), or both the FOXM1 and CENPF regulon gene sets (gray). 
+
+Our previous approximate permutation test of gene set interaction suggested that the shared members of the regulon gene sets contributed more strongly to the enrichment of each regulon gene set than the genes which were not shared. Using a Mann-Whitney U test we find that the genes which are shared by the two regulon gene sets are stochastically dominant over those genes which are unique to each gene set in both the FOXM1 regulon gene set leading edge (rank-biserial correlation = 0.578, p = 1.34e-37) and the CENPF regulon gene set leading edge (rank-biserial correlation = 0.423, p = 1.78e-15).
+
+Thus, not only does our leading edge analysis provide us with a quantitative picture of how each regulon gene set member contributes to the enrichment, it further reinforces the notion that these two putative Master Regulators synergistically act to initiate and maintain the LUAD phenotype.
 
 
 
