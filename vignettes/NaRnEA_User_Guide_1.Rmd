@@ -151,7 +151,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_line(aes(x = x.values, y = y.values), colour = "blue1", lwd = 2) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_2.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_2.png)
 
 ### Visualizing NaRnEA Proportional Enrichment Scores
 
@@ -183,7 +183,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_3.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_3.png)
 
 The `NaRnEA` PES mean is close to (0) and the values are nearly symmetric about sample mean, which is just what we would expect under the null hypothesis. 
 
@@ -233,7 +233,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_4.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_4.png)
 
 We see from this figure that the bootstrapped PES mean is close to (0), the bootstrapped PES standard deviation is close to the standard deviation of the PES values calculated from all 5,000 simulated gene expression signatures, and the approximate 95% confidence of the bootstrapped PES values includes (0). There are many ways to create approximate confidence intervals for effect sizes using the bootstrap with the percentile method being one of the simplest; other methods may offer better coverage probabilities for the approximate confidence interval, but are more computationally intensive (e.g. bias-corrected and accelerated bootstrap confidence interval).
 
@@ -263,7 +263,7 @@ Now that we've modulated the gene expression signature values for the members of
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,2], cur.regul = synthetic.gene.set)
 ```
 
-![](../man/figures/Fig_1_5.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_5.png)
 
 From this figure we see that our modulation worked; based on the `NaRnEA` two-sided p-value we reject the null hypothesis of gene set analysis (p < 0.05) and conclude that the synthetic gene set is positively enriched in the simulated gene expression signature (PES > 0).  
 
@@ -320,7 +320,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_6.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_6.png)
 
 Additionally we'll compute the enrichment of the bootstrapped gene set in a single gene expression signature and plot the bootstrapped PES values with a histogram. 
 
@@ -366,7 +366,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ``` 
 
-![](../man/figures/Fig_1_7.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_7.png)
 
 ### Gene Set Analysis with Gene Sets of Different Sizes
 
@@ -456,7 +456,7 @@ y.breaks <- seq(from = y.min, to = y.max, by = y.step)
 ggplot(plot.data) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_boxplot(aes(x = size.values, y = nes.values), colour = "red1", fill = "white", lwd = .5, outlier.size = .5) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_8.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_8.png)
 
 We see that the `NaRnEA` NES values for the synthetic gene sets are monotonically increasing with the number of synthetic gene set members; we can interpret this to mean that, all else being held equal, larger gene sets have a greater power to reject the null hypothesis, which is exactly what we would expect for a test statistic. 
 
@@ -476,7 +476,7 @@ y.breaks <- seq(from = y.min, to = y.max, by = y.step)
 ggplot(plot.data) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_boxplot(aes(x = size.values, y = pes.values), colour = "red1", fill = "white", lwd = .5, outlier.size = .5) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_9.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_9.png)
 
 The `NaRnEA` PES values, on the other hand, remain consistent across the entire range of synthetic gene set sizes, which is what we expect from an effect size. The interquartile range of the `NaRnEA` PES boxplots decreases as the size of the synthetic gene sets increase, which is also what we expect from an effect size; with greater information about the enrichment of the gene set, our inference (i.e. the PES) becomes more precise. 
 
@@ -558,19 +558,19 @@ Let's visualize the enrichment of each of the gene sets in one of the modulated 
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.a)
 ```
 
-![](../man/figures/Fig_1_10.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_10.png)
 
 ```{r, eval = FALSE}
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.b)
 ```
 
-![](../man/figures/Fig_1_11.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_11.png)
 
 ```{r, eval = FALSE}
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.c)
 ```
 
-![](../man/figures/Fig_1_12.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_12.png)
 
 We see from these plots that Gene Set A and Gene Set C are both enriched in the gene expression signature while Gene Set B is not enriched
 
@@ -649,7 +649,7 @@ cur.y.lab <- "Leading Edge True Positive Rate"
 ggplot(plot.data) + geom_hline(colour = "black", lwd = 1, yintercept = range(y.breaks)) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.breaks)) + geom_abline(colour = "black", linetype = "dashed", slope = 1, intercept = 0) + geom_ribbon(aes(x = x.values, ymin = y.lower.values, ymax = y.upper.values), colour = "blue1", fill = "blue1", lwd = 0, alpha = .25) + geom_line(aes(x = x.values, y = y.mid.values), colour = "blue1", lwd = 1.5) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0.5, colour = "black", size = 20), legend.text = element_text(hjust = 0.5, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_13.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_13.png)
 
 From this Receiver Operator Characteristic we see that the `NaRnEA` leading edge analysis is able to identify genes which are contributing to the enrichment of the synthetic gene set in the simulated gene expression signatures. The median area under the Receiver Operator Characteristic (AUROC) is 0.92 and the approximate 95% confidence spans the interval [0.83,0.981]. Using a one-sided Mann-Whitney-U test we can test the null hypothesis that the AUROC = 0.5. Based on the one-sided p-value we reject the null hypothesis in favor of the alternative hypothesis that the `NaRnEA` leading edge AUROC > 0.05. 
 
@@ -743,13 +743,13 @@ Let's visualize the enrichment of each gene set in the same gene expression sign
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.a)
 ```
 
-![](../man/figures/Fig_1_14.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_14.png)
 
 ```{r, eval = FALSE}
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.b)
 ```
 
-![](../man/figures/Fig_1_15.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_15.png)
 
 From these plots and the values we chose when modulating the gene expression signature values of each gene set's members we see that the enrichment of the two gene sets is significantly different. Now let's perform the approximate permutation test to see if it agrees. 
 
@@ -821,7 +821,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.breaks)) + geom_density(aes(x = x.values, y = ..density..), colour = "red1", fill = "red1", alpha = .25, lwd = 1) + geom_vline(colour = "red1", lwd = 1.5, xintercept = abs(synthetic.gene.set.a.enrichment$pes - synthetic.gene.set.b.enrichment$pes), linetype = "dashed") + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_16.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_16.png)
 
 We see from this figure that the true absolute difference in the `NaRnEA` PES value for each gene set is 1.84 (i.e. the vertical red dashed line). We can use the approximate null distribution to estimate the right-tailed p-value of this true absolute difference and based on its value we reject the null hypothesis that the gene sets are equivalently enriched in the gene expression signature (p < 0.05).  
 
@@ -946,25 +946,25 @@ Now we'll visualize the enrichment of Gene Set A, Gene Set B, Gene Set C, and Ge
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.a)
 ```
 
-![](../man/figures/Fig_1_17.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_17.png)
 
 ```{r, eval = FALSE}
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.c)
 ```
 
-![](../man/figures/Fig_1_18.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_18.png)
 
 ```{r, eval = FALSE}
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.b)
 ```
 
-![](../man/figures/Fig_1_19.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_19.png)
 
 ```{r, eval = FALSE}
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,1], cur.regul = synthetic.gene.set.d)
 ```
 
-![](../man/figures/Fig_1_20.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_20.png)
 
 We see from these plots and from our parameters that Gene Set A is more strongly enriched in the gene expression signature than Gene Set C while Gene Set B and Gene Set D are nearly equally enriched; this follows from the fact that the members of Gene Set AB and members of Gene Set D have an equivalent distribution in the gene expression signature while the members of Gene Set C are more weakly enriched. 
 
@@ -1054,7 +1054,7 @@ cur.fill.lab <- cur.colour.lab
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_density(aes(x = x.values, y = ..density.., colour = group.values, fill = group.values), alpha = .25, lwd = 1) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab, fill = cur.fill.lab) + scale_colour_manual(values = colour.value.vec) + scale_fill_manual(values = fill.value.vec) + geom_vline(colour = "red1", lwd = 1, linetype = "dashed", xintercept = synthetic.gene.set.c.enrichment$pes) + geom_vline(colour = "blue1", lwd = 1, linetype = "dashed", xintercept = synthetic.gene.set.d.enrichment$pes)
 ```
 
-![](../man/figures/Fig_1_21.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_21.png)
 
 We see exactly what we expect based on the parameters of the simulation. The `NaRnEA` PES value for Gene Set C (i.e. Gene Set A Diff, the vertical red dashed line) falls far to the left of its approximate null distribution (i.e. the Gene Set A Diff red density plot). In fact, all `NaRnEA` PES values for the permuted version of Gene Set C are greater than the true `NaRnEA` PES value for Gene Set C; as a result we calculate the approximate two-sided p-value from the empirical sample quantile and reject the null hypothesis for Gene Set A (p < 0.05). 
 
@@ -1136,7 +1136,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_line(aes(x = x.values, y = y.values), colour = "blue1", lwd = 2) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_22.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_22.png)
 
 While visually the `NaRnEA` NES value histogram may not differ extremely from the analytical standard normal probability density function, its standard deviation is too large and we reject the normality of the NES values based on the output of the Shapiro-Wilk test. As a result, we would not expect the two-sided p-values computed from these `NaRnEA` NES values to accurately control the Type I error rate of gene set analysis.
 
@@ -1217,7 +1217,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_histogram(aes(x = x.values, y = ..density..), colour = "red1", fill = "white", alpha = 1, lwd = 1, breaks = bin.breaks) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_line(aes(x = x.values, y = y.values), colour = "blue1", lwd = 2) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_1_23.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_23.png)
 
 Visually it's clear that these `NaRnEA` NES values are nowhere close to standard normal; the standard deviation is much too large, the Shapiro-Wilk test leads us to reject normality (p < 0.05), and the one-sample KS test leads us to reject standard normality (p < 0.05). Such a gene set would need to be reparameterized before analysis with `NaRnEA`; fortunately testing whether a gene set is of sufficient size and parameterization for `NaRnEA` is straightforward with simulated gene expression signatures such as these. 
 

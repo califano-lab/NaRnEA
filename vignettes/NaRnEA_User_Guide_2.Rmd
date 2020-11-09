@@ -140,7 +140,7 @@ cur.colour.lab <- "Phenotype"
 ggplot(plot.data) + geom_hline(colour = "black", yintercept = 0, lwd = 1) + geom_vline(colour = "black", xintercept = 0, lwd = 1) + geom_point(aes(x = x.values, y = y.values, colour = group.values), shape = 21, fill = "white", size = 4, alpha = 1, stroke = 2) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + scale_colour_manual(values = colour.value.vec) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_1.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_1.png)
 
 The multidimensional scaling scatterplot seems to suggest that significant transcriptional differences exist between the LUAD and LUNG samples, which we would expect given how phenotypically different they are. Rather than relying on visual interpretation of the dimensionality reduction scatterplot (which can quickly turn into a [Rorschach test](https://en.wikipedia.org/wiki/Rorschach_test)), let's perform unsupervised clustering with the PAM algorithm ([partitioning around medoids](https://en.wikipedia.org/wiki/K-medoids)).
 
@@ -168,7 +168,7 @@ cur.colour.lab <- "Phenotype"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + facet_wrap(~cluster.values, ncol = 1, scales = "free") + geom_segment(aes(x = score.values, xend = 0, y = sample.values, yend = sample.values, colour = group.values), lwd = 1.5) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_colour_manual(values = colour.value.vec) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 6), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom", strip.text = element_text(hjust = 0.5, colour = "black", size = 20)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_2.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_2.png)
 
 The gene expression signature unsupervised clusters are significantly correlated with the sample phenotypes (Fisher's Exact Test p < 0.05). Cluster 1 consists mostly of LUAD samples while cluster 2 consists mostly of LUNG samples, once again reinforcing the fact that these samples have distinct transcriptional properties.
 
@@ -224,7 +224,7 @@ y.breaks <- seq(from = y.min, to = y.max, by = y.step)
 ggplot(plot.data) + geom_hline(colour = "black", yintercept = 0, lwd = 1) + geom_vline(colour = "black", xintercept = 0, lwd = 1) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), shape = 21, size = 2, fill = "white", alpha = 1, stroke = 1) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + scale_colour_manual(values = colour.value.vec) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_3.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_3.png)
 
 Our suspicions are confirmed; the LUAD and LUNG phenotypes differ quite significantly at the transcriptional level. After correcting the differential gene expression two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we find that >40% of the protein-coding genes are significantly upregulated in the LUAD samples with respect to the LUNG samples and more than 20% of the protein-coding genes are significantly downregulated in the LUAD samples with respect to the LUNG samples.
 
@@ -337,7 +337,7 @@ cur.colour.lab <- "Direction (FDR < 0.05)"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), fill = "white", alpha = 1, stroke = 1.5, size = 2, shape = 21) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_4.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_4.png)
 
 In this modified volcano plot the `NaRnEA` effect size (PES) is on the x-axis and the magnitude of the `NaRnEA` test statistic (NES) is on the y-axis. After correcting the `NaRnEA` two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we find that >20% of the putative transcriptional regulatory proteins are activated in the LUAD samples with respect to the LUNG sample sand more than 20% of the putative transcriptional regulatory proteins are deactivated in the LUAD samples with respect to the LUNG samples. With more than 2,000 differentially activated proteins, we can motivate any number of follow up experiments to further dissect the biology of LUAD. 
 
@@ -379,7 +379,7 @@ cur.colour.lab <- "Direction (FDR < 0.05)"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), fill = "white", alpha = 1, stroke = 1.5, size = 2, shape = 21) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_5.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_5.png)
 
 After correcting the `NaRnEA` two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we do not find that any of the regulon gene sets are significantly enriched in the shuffled LUAD vs. LUNG gene expression signature, indicating that the regulon gene sets are of adequate size and parameterization or `NaRnEA` to guarantee accurate control of the Type I error rate.
 
@@ -432,7 +432,7 @@ cur.colour.lab <- "Direction (FDR < 0.05)"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), fill = "white", alpha = 1, stroke = 1.5, size = 2, shape = 21) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_6.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_6.png)
 
 After correcting the `NaRnEA` two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we do not find that any of the shuffled regulon gene sets are significantly enriched in the LUAD vs. LUNG gene expression signature. This supports the assumption made by `NaRnEA` that genes are independent and identically distributed in the gene expression signature under the null hypothesis of gene set analysis; as a result, `NaRnEA` is able to guarantee accurate control of the gene set analysis Type I error rate. 
 
@@ -468,7 +468,7 @@ cur.colour.lab <- "Regulon-GES Combo"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.breaks)) + geom_hline(colour = "black", lwd = 1, yintercept = range(y.breaks)) + geom_abline(colour = "black", lwd = 1, intercept = 0, slope = 1, linetype = "dashed") + geom_line(aes(x = x.values, y = y.values, colour = group.values), lwd = 1.5) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
 ```
 
-![](../man/figures/Fig_2_7.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_7.png)
 
 When the null hypothesis is true, the `NaRnEA` two-sided p-values should be uniformly distributed on the interval [0,1], producing an empirical cumulative distribution function which tracks along the diagonal of the plot (black dashed line). 
 
@@ -518,7 +518,7 @@ cur.x.lab <- "LUAD vs. LUNG Gene Expression Signature"
 EnrichmentAnalysisPlot(cur.ges = real.luad.vs.lung.ges, cur.regul = true.regulon.list[[cur.entrez.name]], cur.title = cur.title, cur.subtitle = cur.subtitle, cur.x.lab = cur.x.lab)
 ```
 
-![](../man/figures/Fig_2_8.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_8.png)
 
 Based on the two-sided p-value computed from the `NaRnEA` NES value we reject the null hypothesis of gene set analysis for the FOXM1 regulon gene set and conclude that the FOXM1 regulon gene set is positively enriched in the LUAD vs. LUNG gene expression signature (PES > 0).  
 
@@ -556,7 +556,7 @@ cur.x.lab <- "LUAD vs. LUNG Gene Expression Signature"
 EnrichmentAnalysisPlot(cur.ges = real.luad.vs.lung.ges, cur.regul = true.regulon.list[[cur.entrez.name]], cur.title = cur.title, cur.subtitle = cur.subtitle, cur.x.lab = cur.x.lab)
 ```
 
-![](../man/figures/Fig_2_9.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_9.png)
 
 Based on the two-sided p-value computed from the `NaRnEA` NES value we reject the null hypothesis of gene set analysis for the CENPF regulon gene set and conclude that the CENPF regulon gene set is positively enriched in the LUAD vs. LUNG gene expression signature (PES > 0). 
 
@@ -634,7 +634,7 @@ cur.y.lab <- "Probability Density"
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.breaks)) + geom_density(aes(x = x.values, y = ..density..), colour = "red1", fill = "red1", alpha = .25, lwd = 1) + geom_vline(colour = "red1", lwd = 1.5, xintercept = abs(synthetic.gene.set.a.enrichment$pes - synthetic.gene.set.b.enrichment$pes), linetype = "dashed") + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
 ```
 
-![](../man/figures/Fig_2_10.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_10.png)
 
 From this analysis we find that the true absolute difference in PES values between the FOXM1 regulon gene set and the CENPF regulon gene set is (0.1). This value is greater than all but (0.44%) of the values in our approxiamte null distribution which we estimated using permutation of the regulon gene set members. We can interpret this number (0.0044) as our approximate two-sided p-value; based on this result we reject the null hypothesis that the FOXM1 regulon gene set and CENPF regulon gene set are equally enriched in the LUAD vs. LUNG gene expression signature. 
 
@@ -735,7 +735,7 @@ cur.fill.lab <- cur.colour.lab
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_density(aes(x = x.values, y = ..density.., colour = group.values, fill = group.values), alpha = .25, lwd = 1) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab, fill = cur.fill.lab) + scale_colour_manual(values = colour.value.vec) + scale_fill_manual(values = fill.value.vec) + geom_vline(colour = "red1", lwd = 1, linetype = "dashed", xintercept = synthetic.gene.set.c.enrichment$pes) + geom_vline(colour = "blue1", lwd = 1, linetype = "dashed", xintercept = synthetic.gene.set.d.enrichment$pes)
 ```
 
-![](../man/figures/Fig_2_11.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_11.png)
 
 From these data we find that the FOXM1 and CENPF regulon gene sets share a large number of targets (far more than would be expected by random chance based on the size of each regulon gene set). 
 
@@ -794,7 +794,7 @@ cur.colour.lab <- "Regulon Gene Set Membership"
 ggplot(plot.data) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + facet_wrap(~set.values, ncol = 1, scales = "free") + geom_segment(aes(x = y.values, xend = y.values, y = z.values, yend = 0, colour = group.values), lwd = .75) + scale_colour_manual(values = colour.value.vec) + scale_y_continuous(limits = range(z.breaks), breaks = z.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), axis.text.x = element_blank(), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom", strip.text = element_text(hjust = 0.5, colour = "black", size = 20), axis.ticks.x = element_blank()) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab, fill = cur.fill.lab)
 ```
 
-![](../man/figures/Fig_2_12.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_2_12.png)
 
 For this plot we've converted the `NaRnEA` leading edge p-values into z-scores based on the sign of the FOXM1 and CENPF regulon gene set PES values. We've also set the color of each gene based on whether the gene is present in the FOXM1 regulon gene set alone (red), the CENPF regulon gene set alone (blue), or both the FOXM1 and CENPF regulon gene sets (gray). 
 
