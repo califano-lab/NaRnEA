@@ -95,7 +95,7 @@ Let's visualize the enrichment of our synthetic gene set in a single gene expres
 EnrichmentAnalysisPlot(cur.ges = synthetic.ges.mat[,2], cur.regul = synthetic.gene.set)
 ```
 
-![](../man/figures/Fig_1_1.png){#id .class width=100% height=100%}
+![](../man/figures/Fig_1_1.png)
 
 At the very top of the plot we can see the quantitative output of `NaRnEA`: the Proportional Enrichment Score (PES), the Normalized Enrichment Score (NES), and the statistical significance (two-sided p-value). 
 
