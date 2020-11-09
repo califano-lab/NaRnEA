@@ -8,16 +8,11 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
-
-```{r, include = FALSE}
 library(knitr)
 opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(width.cutoff=70))
 ```
+
+# Identifying Master Regulators of Lung Adenocarcinoma
 
 ## Introduction
 
@@ -31,6 +26,12 @@ For these analyses we'll need to install and load several R packages, including 
 install.packages("BiocManager")
 library(BiocManager)
 
+install("DESeq2")
+library(DESeq2)
+
+install("cluster")
+library(cluster)
+
 install("ggplot2")
 library(ggplot2)
 
@@ -41,40 +42,30 @@ install_github(repo = "califano-lab/NaRnEA", force = TRUE, build_vignettes = TRU
 library(NaRnEA)
 ```
 
+## Real World Gene Expression Data
 
+In Part 1 of the `NaRnEA` User Guide we demonstrated how to perform powerful and accurate gene set analysis in a non-parametric manner with `NaRnEA` using simulated data; now we'll turn our attention to leveraging NaRnEA for a unique type of gene set analysis; identifying Master Regulators of lung cancer using a systems biology approach.
 
+### Lung Adenocarcinoma 
 
+Some background; lung adenocarcinoma (LUAD) is the most common histological subtype of lung cancer (a heterogeneous disease which accounts for the highest number of cancer-related mortalities in the world each year). When The Cancer Genome Atlas (TCGA) was created, more than 500 patients diagnosed with LUAD tumors volunteered their biological data, producing a remarkable repository of high quality LUAD primary tumor RNA sequencing data. Over 50 of these patients also volunteered biopsies from benign lung tissue, producing age-matched and sex-matched control samples.
 
-
-
-
-
-
-
-
-
+We'll start by loading in the gene expression profiles (rawcounts) for all samples from the TCGA LUAD project. These gene expression profiles were quantified from RNA sequencing FASTQ files with `kallisto` using the GRCh38 reference transcriptome. We'll also load in a dataframe that will allow us to conver the entrez id gene names to hugo gene symbols, which can aid in our interpretation of the data. 
 
 ```{r, eval = FALSE}
-
-
-
-
-
-# set parameters
 sim.seed <- 11
 sig.figs <- 3
-figure.output.value <- 2
 
-# set the seed
 set.seed(sim.seed)
 
-# load in the data frame that will let us convert entrez id gene names into gene symbols, which was also the data frame used to convert the kallisto transcript expression profiles into gene expression profiles
-entrez.to.hugo.data <- readRDS(file = "/Volumes/ATG_4TB_HD_v3/ATG_NARNEA_Project/110420/vignette_data/tx2gene.rds")
+data("entrez.to.hugo.data", package = "NaRnEA")
 
-# load in the TCGA LUAD gene expression profiles (raw counts)
-luad.counts <- readRDS(file = "/Volumes/ATG_4TB_HD_v3/ATG_NARNEA_Project/110420/vignette_data/TCGA_LUAD_RawCounts.rds")
+data("luad.counts", package = "NaRnEA")
+```
 
-# extract 50 tumor gene expression profiles and 50 tissue gene expression profiles from the total set of TCGA LUAD gene expression profiles
+Next we'll extract 50 LUAD tumor gene expression profiles and 50 LUNG tissue gene expression profiles from the total set of TCGA LUAD gene expression profiles. This can be done based on the sample names; those samples with `-01` are primary tumor while those samples with '-11' are matched normal tissue. We'll make sure that the 50 LUAD gene expression profiles and 50 LUNG gene expression profiles come from the same 50 patients.
+
+```{r, eval = FALSE}
 tumor.counts <- luad.counts[,which(substr(colnames(luad.counts),13,15) == "-01")]
 tissue.counts <- luad.counts[,which(substr(colnames(luad.counts),13,15) == "-11")]
 
@@ -82,8 +73,13 @@ common.patients <- intersect(substr(colnames(tumor.counts),1,12),substr(colnames
 
 tumor.counts <- tumor.counts[,match(common.patients[1:50],substr(colnames(tumor.counts),1,12))]
 tissue.counts <- tissue.counts[,match(common.patients[1:50],substr(colnames(tissue.counts),1,12))]
+```
 
-# normalize the samples for sequencing depth
+### Exploratory Data Analysis
+
+As a sanity check, we'll start by performing some exploratory data analysis with these gene expression profiles. First, we'll normalize the samples for sequencing depth (i.e. counts per million). 
+
+```{r, eval = FALSE}
 tumor.cpm <- apply(tumor.counts,2,function(x){
 	y <- 1E6*x/sum(x)
 	return(y)
@@ -93,8 +89,11 @@ tissue.cpm <- apply(tissue.counts,2,function(x){
 	y <- 1E6*x/sum(x)
 	return(y)
 })
+```
 
-# combine the samples and compute a non-parametric internal gene expression signature for each sample
+Next we'll combine the LUAD and LUNG samples and compute a non-parametric internal gene expression signature for each sample. This can be done by copula-transforming each gene across all of the samples and then applying an inverse standard normal transformation so he each gene has a standard normal marginal distribution.
+
+```{r, eval = FALSE}
 total.cpm <- cbind(tumor.cpm,tissue.cpm)
 
 total.ges <- t(apply(total.cpm,1,function(x){
@@ -102,12 +101,18 @@ total.ges <- t(apply(total.cpm,1,function(x){
 	z <- qnorm(y)
 	return(z)
 }))
+```
 
-# compute a distance matrix between all samples based on Pearson Correlation
+For unsupervised clustering and dimensionality reduction we'll need a distance matrix which quantifies the degree of dissimilarity bewteen each sample. We can compute this from the Pearson Correlation between each non-parametric internal gene expression signature with the following code.
+
+```{r, eval = FALSE}
 total.ges.dist <- sqrt((1 - cor(total.ges, method = "pearson")))
 total.ges.dist <- as.dist(total.ges.dist)
+```
 
-# perform dimensionality reduction with the resultant distance matrix using multidemsional scaling
+Now we'll perform non-linear dimensionality reduction with this distance matrix using multidimensional scaling; this method attemps to structure the samples in two-dimensional space such that the distance between each point is approximately equal to the distance from the original high dimensional distance matrix. We'll use a scatterplot to visualize the samples after dimensionality reduction. 
+
+```{r, eval = FALSE}
 set.seed(sim.seed)
 
 plot.data <- cmdscale(d = total.ges.dist, k = 2)[,1:2]
@@ -132,13 +137,15 @@ cur.y.lab <- "Dimension 2"
 cur.colour.lab <- "Phenotype"
 
 ggplot(plot.data) + geom_hline(colour = "black", yintercept = 0, lwd = 1) + geom_vline(colour = "black", xintercept = 0, lwd = 1) + geom_point(aes(x = x.values, y = y.values, colour = group.values), shape = 21, fill = "white", size = 4, alpha = 1, stroke = 2) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + scale_colour_manual(values = colour.value.vec) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_1.png){#id .class width=100% height=100%}
 
-# perform some unsupervised clustering on the gene expression profiles
+The multidimensional scaling scatterplot seems to suggest that significant transcriptional differences exist between the LUAD and LUNG samples, which we would expect given how phenotypically different they are. Rather than relying on visual interpretation of the dimensionality reduction scatterplot (which can quickly turn into a [Rorschach test](https://en.wikipedia.org/wiki/Rorschach_test)), let's perform unsupervised clustering with the PAM algorithm ([partitioning around medoids](https://en.wikipedia.org/wiki/K-medoids)).
+
+```{r, eval = FALSE}
 total.ges.clust <- pam(x = total.ges.dist, k = 2)
 
-# visualize the unsupervised clustering silhouette scores
 plot.data <- as.data.frame(total.ges.clust$silinfo$widths)
 colnames(plot.data) <- c("cluster.values","neighborh.values","score.values")
 plot.data$group.values <- "LUAD"
@@ -158,11 +165,17 @@ cur.y.lab <- "Sample"
 cur.colour.lab <- "Phenotype"
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + facet_wrap(~cluster.values, ncol = 1, scales = "free") + geom_segment(aes(x = score.values, xend = 0, y = sample.values, yend = sample.values, colour = group.values), lwd = 1.5) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_colour_manual(values = colour.value.vec) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 6), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom", strip.text = element_text(hjust = 0.5, colour = "black", size = 20)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_2.png){#id .class width=100% height=100%}
 
+The gene expression signature unsupervised clusters are significantly correlated with the sample phenotypes (Fisher's Exact Test p < 0.05). Cluster 1 consists mostly of LUAD samples while cluster 2 consists mostly of LUNG samples, once again reinforcing the fact that these samples have distinct transcriptional properties.
 
-# compute the differential expression of all protein coding genes between LUAD and LUNG using DESeq2
+### Differential Gene Expression Analysis
+
+In order to directly estimate the differential expression of each protein-coding gene between the LUAD phenotype and LUNG phenotype we'll leverage the `DESeq2` R package, which performs differential gene expression analysis based on a negative binomial distribution [link](http://bioconductor.org/packages/release/bioc/html/DESeq2.html). `DESeq2` works directly with counts and runs very efficiently even for the 100 gene expression profiles we are using. Once we've performed the differential gene expression analysis with `DESeq2` we'll extract the results and visualize them using a differential gene expression volcano plot. 
+
+```{r, eval = FALSE}
 cur.count.data <- cbind(tumor.counts,tissue.counts)
 cur.count.data <- apply(cur.count.data,2,function(x){
 	y <- round(x)
@@ -180,7 +193,6 @@ cur.dds <- DESeq(cur.dds)
 cur.dge.res <- results(cur.dds, contrast = c("Group","Tumor","Tissue"), cooksCutoff = FALSE, independentFiltering = FALSE, format = "DataFrame")
 cur.dge.res <- as.data.frame(cur.dge.res)
 
-# visualize the differential gene expression results
 plot.data <- data.frame(x.values = cur.dge.res$log2FoldChange, p.values = cur.dge.res$pvalue)
 plot.data <- plot.data[which(is.finite(plot.data$p.values)),]
 plot.data$y.values <- -1*log(plot.data$p.values,base = 10)
@@ -209,23 +221,40 @@ y.max <- y.step*ceiling(max(plot.data$y.values)/y.step)
 y.breaks <- seq(from = y.min, to = y.max, by = y.step)
 
 ggplot(plot.data) + geom_hline(colour = "black", yintercept = 0, lwd = 1) + geom_vline(colour = "black", xintercept = 0, lwd = 1) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), shape = 21, size = 2, fill = "white", alpha = 1, stroke = 1) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + scale_colour_manual(values = colour.value.vec) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_3.png){#id .class width=100% height=100%}
 
-# load in the ARACNe-inferred transcriptional regulatory interactions for TFs, coTFs, and SigPs
-tf.network.data <- readRDS(file = "/Volumes/ATG_4TB_HD_v3/ATG_NARNEA_Project/110420/vignette_data/TCGA_LUAD_TF_ARACNe_100_Fold_75%_MCCV_Network_Data.rds")
+Our suspicions are confirmed; the LUAD and LUNG phenotypes differ quite significantly at the transcriptional level. After correcting the differential gene expression two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we find that >40% of the protein-coding genes are significantly upregulated in the LUAD samples with respect to the LUNG samples and more than 20% of the protein-coding genes are significantly downregulated in the LUAD samples with respect to the LUNG samples.
 
-cotf.network.data <- readRDS(file = "/Volumes/ATG_4TB_HD_v3/ATG_NARNEA_Project/110420/vignette_data/TCGA_LUAD_coTF_ARACNe_100_Fold_75%_MCCV_Network_Data.rds")
+### ARACNe-Inferred Regulon Gene Sets
 
-sig.network.data <- readRDS(file = "/Volumes/ATG_4TB_HD_v3/ATG_NARNEA_Project/110420/vignette_data/TCGA_LUAD_Sig_ARACNe_100_Fold_75%_MCCV_Network_Data.rds")
+The Algorithm for the Reconstruction of Accurate Cellular Networks ([ARACNe](https://pubmed.ncbi.nlm.nih.gov/16723010/)), published by Margolin et al. in 2006, is a well-validated method which is capable of reverse-engineering transcriptional regulatory networks from gene expression data using an information theoretic approach. We have used a modified version of the newer implementation of the algorithm, [ARACNe-AP](https://pubmed.ncbi.nlm.nih.gov/27153652/), to infer the transcriptional regulatory targets for transcription factors, co-transcription factors, and signal transduction proteins from the other LUAD primary tumor gene expression profiles in TCGA. 
+
+. Let's load in those datasets now and combine them into a single data frame.
+
+```{r, eval = FALSE}
+data("tf.network.data", package = "NaRnEA")
+
+data("cotf.network.data", package = "NaRnEA")
+
+data("sig.network.data", package = "NaRnEA")
 
 total.network.data <- rbind(tf.network.data,cotf.network.data,sig.network.data)
+```
 
-# compute the Regulation Confidence and Mode of Regulation for each interaction
+For each of the putative transcriptional regulatory interactions inferred by ARACNe we have provided several key pieces of data (i) the median mutual information between the gene expression of the regulator and the gene expression of the target across all subnetworks, (ii) the number of subnetworks in which a transcriptional regulatory interation appeared, and (iii) the Spearman correlation between the gene expression of the regulator and the gene expression of the target. We can use these data to estimate a Regulation Confidence and Mode of Regulation for each interaction. 
+
+```{r, eval = FALSE}
 total.network.data$rc.value <- (total.network.data$mi.value*total.network.data$count.value)/max(total.network.data$count.value)
 total.network.data$mor.value <- (total.network.data$scc.value)
+```
 
-# create a list of regulon gene sets, one for each of the transcriptional regulatory proteins
+The use of the Spearman correlation for the Mode of Regulation is straightforward, but prone to error if the gene expression of the regulator is negatively correlated with the activity of the regulator (e.g. feedback loops, heavy post-transcriptional regulation). By calculating the Regulation Confidence from both the subnetwork count and the median mutual information we give weight to edges which are strong and present across multiple putative network topologies. 
+
+We'll now restructure these data as a list of regulon gene sets, one for each of the putative transcriptional regulatory proteins. We'll subset the list to those regulon gene sets which are sufficiently large (at least 50 targets) and we'll limit the maximum regulon gene set size to 500 targets to reduce the computational burden of subsequent analyses. 
+
+```{r, eval = FALSE}
 total.regulator.names <- unique(as.character(total.network.data$regulator.value))
 total.target.names <- unique(as.character(total.network.data$target.value))
 
@@ -237,13 +266,11 @@ true.regulon.list <- lapply(total.regulator.names,function(cur.regulator.name){
 })
 names(true.regulon.list) <- total.regulator.names
 
-# keep regulon gene sets with at least 50 targets
 true.regulon.list <- true.regulon.list[as.numeric(which(sapply(true.regulon.list,function(x){return(length(x$tfmode))}) >= 50))]
 
 length(true.regulon.list)
 length(unlist(lapply(true.regulon.list,function(x){return(names(x$tfmode))})))
 
-# subset to a maximum number of targets per regulator
 cur.max.regulon.size <- 500
 
 true.regulon.list <- lapply(true.regulon.list,function(x){
@@ -253,53 +280,36 @@ true.regulon.list <- lapply(true.regulon.list,function(x){
 	z <- list(tfmode = x$tfmode[match(y,names(x$tfmode))], likelihood = x$likelihood[match(y,names(x$tfmode))])
 	return(z)
 })
+```
 
-# compute the number of regulators, number of targets, and total number of interactions
+Let's now compute the number of regulators, number of targets, and total number of interactions in our ARACNe-inferred LUAD transcriptional regulatory network (i.e. interactome). 
+
+```{r, eval = FALSE}
 length(true.regulon.list)
 
 length(unique(unlist(lapply(true.regulon.list,function(x){return(names(x$tfmode))}))))
 
 length(unlist(lapply(true.regulon.list,function(x){return(names(x$tfmode))})))
+```
 
-# create a real gene expression signature from the differential gene expression results
+### NaRnEA-Inferred Differential Protein Activity
+
+Gene set analysis methods make a critical assumption that is often overlooked; they assume that the expression of the genes in a gene set are dependent on the activity of the ontology that unifies those gene set members. This assumption may or may not hold depending on how the activity of the ontology is regulated; for example, if one were to create a gene set based on enzymes in a metabolic pathway, it may be very difficult to leverage gene set analysis to infer the differential activity of this metabolic pathway if the activity of the pathway is controlled at the post-transcriptional level.
+
+However, this critical assumption of gene set analysis is always satisfied by transcriptional regulatory proteins; these proteins are enzymes whose biochemical activity alters the expression of their transcriptional targets. The Master Regulator Inference Algorithm ([MARINa](https://pubmed.ncbi.nlm.nih.gov/20531406/)), published by Lefebvre et al. in 2010, was the first method designed to leverage gene set analysis of regulon gene sets to identify transcriptional regulatory proteins which are necessary and sufficient for the initiation and maintenance of a particular phenotype (i.e. Master Regulators). 
+
+Now that we have our ARACNe-inferred regulon gene sets we'll use `NaRnEA` to test for their enrichment in a gene expression signature which we'll estimate between the LUAD phenotype and LUNG phenotype using the DESeq2 differential gene expression results. We hypothesize that the transcriptional regulatory proteins whose regulon gene sets are significantly enriched in the LUAD vs. LUNG gene expression signature will demonstrate differential activity between the two phenotypes, thus representing putative LUAD Master Regulators. Once we've used `NaRnEA` to infer the differential activity of each putative transcriptional regulatory protein we'll visualize it with a modified version of a volcano plot.
+
+```{r, eval = FALSE}
 real.luad.vs.lung.ges <- qnorm(p = (cur.dge.res$pvalue/2), lower.tail = FALSE)*sign(cur.dge.res$log2FoldChange)
 names(real.luad.vs.lung.ges) <- rownames(cur.dge.res)
 
-# compute the enrichment of all true regulons in the true LUAD vs. LUNG gene expression signature
 true.real.dpa.res <- t(sapply(true.regulon.list,function(cur.regulon,cur.ges){
 	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.regulon, minsize = 30, seed = 1, leading.edge = FALSE))
 	return(y)
 }, cur.ges = real.luad.vs.lung.ges))
 true.real.dpa.res <- as.data.frame(true.real.dpa.res)
 
-# create a shuffle gene expression signature
-set.seed(sim.seed)
-shuffle.luad.vs.lung.ges <- real.luad.vs.lung.ges
-names(shuffle.luad.vs.lung.ges) <- sample(names(shuffle.luad.vs.lung.ges), replace = FALSE)
-
-# compute the enrichment of all true regulons in the shuffled LUAD vs. LUNG gene expression signature
-true.shuffle.dpa.res <- t(sapply(true.regulon.list,function(cur.regulon,cur.ges){
-	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.regulon, minsize = 30, seed = 1, leading.edge = FALSE))
-	return(y)
-}, cur.ges = shuffle.luad.vs.lung.ges))
-true.shuffle.dpa.res <- as.data.frame(true.shuffle.dpa.res)
-
-# create a synthetic regulon list where the targets of each original regulon are swapped out for targets chosen from the regulon gene set's complement
-set.seed(sim.seed)
-null.regulon.list <- lapply(true.regulon.list,function(x){
-	y <- x
-	names(y$tfmode) <- sample(setdiff(names(real.luad.vs.lung.ges),names(x$tfmode)), size = length(y$tfmode))
-	return(y)
-})
-
-# compute the enrichment of all null regulons in the true LUAD vs. LUNG gene expression signature
-null.real.dpa.res <- t(sapply(null.regulon.list,function(cur.regulon,cur.ges){
-	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.regulon, minsize = 30, seed = 1, leading.edge = FALSE))
-	return(y)
-}, cur.ges = real.luad.vs.lung.ges))
-null.real.dpa.res <- as.data.frame(null.real.dpa.res)
-
-# visualize the differential protein activity inferred for the true regulons in the real LUAD vs. LUNG gene expression signature
 plot.data <- data.frame(x.values = true.real.dpa.res$pes, y.values = abs(true.real.dpa.res$nes))
 plot.data$p.values <- 2*pnorm(q = plot.data$y.values, lower.tail = FALSE)
 plot.data$fdr.values <- p.adjust(p = plot.data$p.values, method = "BH")
@@ -324,10 +334,31 @@ cur.y.lab <- "| Normalized Enrichment Score |"
 cur.colour.lab <- "Direction (FDR < 0.05)"
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), fill = "white", alpha = 1, stroke = 1.5, size = 2, shape = 21) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_4.png){#id .class width=100% height=100%}
 
-# visualize the differential protein activity inferred for the true regulons in the shuffled LUAD vs. LUNG gene expression signature
+In this modified volcano plot the `NaRnEA` effect size (PES) is on the x-axis and the magnitude of the `NaRnEA` test statistic (NES) is on the y-axis. After correcting the `NaRnEA` two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we find that >20% of the putative transcriptional regulatory proteins are activated in the LUAD samples with respect to the LUNG sample sand more than 20% of the putative transcriptional regulatory proteins are deactivated in the LUAD samples with respect to the LUNG samples. With more than 2,000 differentially activated proteins, we can motivate any number of follow up experiments to further dissect the biology of LUAD. 
+
+## Type I Error Rate Control by NaRnEA
+
+## NaRnEA Gene Set Analysis with a Shuffled Gene Expression Signature 
+
+In Part 1 of the `NaRnEA` User Guide we demonstrated that `NaRnEA` can accurately control the Type I error rate of gene set analysis using simulated data; however, can we be certain that it will control the Type I error rate of gene set analysis in real world data, which is often much messier? If the Type I error rate is not accurately controlled, then the putative Master Regulators of the LUAD phenotype that were identified by `NaRnEA` may be riddled with false positives.  
+
+In order to test whether `NaRnEA` accurately controls the Type I error rate of gene set analysis with real world data in two ways we'll take two approaches. First,  we'll create a shuffled gene expression signature by shuffling the gene identifiers of the original gene expression signature. Because we've shuffled the genes we've essentially destroyed any biological correlation that originally existed, which virtually guarantees that the null hypothesis of gene set analysis is true for all of our regulon gene sets. We can then test each regulon gene set for enrichment in this shuffled gene expression signature; any significant enrichment results will indicate that the offending regulon gene set is either too small or is not adequately parameterized for `NaRnEA` to guarantee accurate control of the Type I error rate. We can visualize the NaRnEA-inferred differential protein activity for the real regulon gene sets in the shuffled LUAD vs. LUNG gene expression signature once again using our modified volcano plot. 
+
+```{r, eval = FALSE}
+set.seed(sim.seed)
+shuffle.luad.vs.lung.ges <- real.luad.vs.lung.ges
+names(shuffle.luad.vs.lung.ges) <- sample(names(shuffle.luad.vs.lung.ges), replace = FALSE)
+
+true.shuffle.dpa.res <- t(sapply(true.regulon.list,function(cur.regulon,cur.ges){
+	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.regulon, minsize = 30, seed = 1, leading.edge = FALSE))
+	return(y)
+}, cur.ges = shuffle.luad.vs.lung.ges))
+true.shuffle.dpa.res <- as.data.frame(true.shuffle.dpa.res)
+
 plot.data <- data.frame(x.values = true.shuffle.dpa.res$pes, y.values = abs(true.shuffle.dpa.res$nes))
 plot.data$p.values <- 2*pnorm(q = plot.data$y.values, lower.tail = FALSE)
 plot.data$fdr.values <- p.adjust(p = plot.data$p.values, method = "BH")
@@ -345,10 +376,42 @@ cur.y.lab <- "| Normalized Enrichment Score |"
 cur.colour.lab <- "Direction (FDR < 0.05)"
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), fill = "white", alpha = 1, stroke = 1.5, size = 2, shape = 21) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_5.png){#id .class width=100% height=100%}
 
-# visualize the differential protein activity inferred for the shuffled regulons in the real LUAD vs. LUNG gene expression signature
+After correcting the `NaRnEA` two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we do not find that any of the regulon gene sets are significantly enriched in the shuffled LUAD vs. LUNG gene expression signature, indicating that the regulon gene sets are of adequate size and parameterization or `NaRnEA` to guarantee accurate control of the Type I error rate.
+
+### An Information Theoretic Justification for the NaRnEA Gene Set Null Distribution 
+
+In order to guarantee accurate control of the Type I error rate, `NaRnEA` assumes that genes in a gene set are independently and identically distributed in the gene expression signature when the null hypothesis of gene set analysis is true (i.e. the ontology unifying the members of the gene set is not differntially activated between the test phenotype and reference phenotype under analysis). This assumption is a strong one and follows from the [principle of maximum entropy](https://en.wikipedia.org/wiki/Principle_of_maximum_entropy), an information theoretic generalization of Occam's Razor that leads us to select, as our null distribution, the probability distribution with the maximum entropy constrained on all known information. 
+
+If we assume that the null hypothesis of gene set analysis is true for a particular gene set, then for our null distribution we would like to select the joint probability distribution for the members of the gene set which has the greatest entropy out of all possible joint probability distributions. `NaRnEA` performs gene set analysis in a robust manner by non-parametrically transforming the gene expression signature; as a result, the continuous values are discretized based on the direction and relative magnitude of the differential expression for each gene. If we model each gene set member as a discrete random variable which can occupy any of the values in the non-parametric gene expression signature it naturally follows that the maximum entropy distribution for each gene set member is that they are equally likely to occupy any of the values in the non-parametric gene expression signature (i.e. each gene is identically distributed in the gene expression signature).
+
+Furthermore, the joint entropy of an ensemble of discrete random variables is always less than or equal to the sum of the entropies for each of the discrete random variables which compose the ensemble. In fact, the joint entropy is only equal to the sum of the individual entropies if all of the discrete random variables in the ensemble are independent. This leads us to the idea that the maximum entropy joint probability distribution for the gene set members (i.e. the ideal null distribution for genes in gene set analysis) is one in which all of the genes in the gene set are independent and identically distributed in the gene expression signature. 
+
+## NaRnEA Gene Set Analysis with Shuffled Regulon Gene Sets
+
+By shuffling the LUAD vs. LUNG gene expression signature we have destroyed whatever correlation may have existed between different genes. Thus, in order to verify the assumption made by `NaRnEA` that genes are independent and identically distributed in the LUAD vs. LUNG gene expression signature under the null hypothesis of gene set analysis, we'll need to take a different approach that does not alter the gene expression signature.
+
+To this end, we can swap out the members of each regulon gene set for genes randomly selected from each regulon gene set's complement. This preserves the regulon gene set parameterization as well as the structure of the LUAD vs. LUNG gene expression signature, but creates gene sets whose members are (at least in theory) not biologically related. Of course, due to the high degree of gene expression coregulation present in the eukaryotic cell we may accidentally create a few gene sets whose members display some biologically meaningful relationships; as a result, a handful of shuffled gene sets may produce significant enrichment in the LUAD vs. LUNG gene expression signature.
+
+However, if the `NaRnEA` assumption that genes are independent and identically distributed in the LUAD vs. LUNG gene expression signature under the null hypothesis of gene set analysis is incorrect, we can expect that many of these new gene sets will display significant enrichment in the LUAD vs. LUNG gene expression signature, which would be extremely problematic for the method. Our modified volcano plot will help us determine whether this is the case.
+
+```{r, eval = FALSE}
+set.seed(sim.seed)
+null.regulon.list <- lapply(true.regulon.list,function(x){
+	y <- x
+	names(y$tfmode) <- sample(setdiff(names(real.luad.vs.lung.ges),names(x$tfmode)), size = length(y$tfmode))
+	return(y)
+})
+
+null.real.dpa.res <- t(sapply(null.regulon.list,function(cur.regulon,cur.ges){
+	y <- unlist(NaRnEA(ges = cur.ges, regulon = cur.regulon, minsize = 30, seed = 1, leading.edge = FALSE))
+	return(y)
+}, cur.ges = real.luad.vs.lung.ges))
+null.real.dpa.res <- as.data.frame(null.real.dpa.res)
+
 plot.data <- data.frame(x.values = null.real.dpa.res$pes, y.values = abs(null.real.dpa.res$nes))
 plot.data$p.values <- 2*pnorm(q = plot.data$y.values, lower.tail = FALSE)
 plot.data$fdr.values <- p.adjust(p = plot.data$p.values, method = "BH")
@@ -366,10 +429,15 @@ cur.y.lab <- "| Normalized Enrichment Score |"
 cur.colour.lab <- "Direction (FDR < 0.05)"
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), fill = "white", alpha = 1, stroke = 1.5, size = 2, shape = 21) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_6.png){#id .class width=100% height=100%}
 
-# visualize the empirical cumulative distribution of two-sided p-values for (1) the real regulon gene sets in the real LUAD vs. LUNG gene expression signature, (2) the real regulon gene sets in the shuffled LUAD vs. LUNG gene expression signature, and (3) the shuffled regulon gene sets in the real LUAD vs. LUNG gene expression signature 
+After correcting the `NaRnEA` two-sided p-values to control the False Discovery Rate with the Benjamini-Hochberg method, we do not find that any of the shuffled regulon gene sets are significantly enriched in the LUAD vs. LUNG gene expression signature. This supports the assumption made by `NaRnEA` that genes are independent and identically distributed in the gene expression signature under the null hypothesis of gene set analysis; as a result, `NaRnEA` is able to guarantee accurate control of the gene set analysis Type I error rate. 
+
+In addition to the modified volcano plot we can visualize the empirical cumulative distribution function for the `NaRnEA` two-sided p-values from the enrichment of (i) ARACNe-inferred regulon gene sets in the LUAD vs. LUNG gene expression signature, (ii) ARACNe-inferred regulon gene sets in the shuffled LUAD vs. LUNG gene expression signature, and (iii) shuffled regulon gene sets in the LUAD vs. LUNG gene expression signature. We'll also calculate the proportion of two-sided p-values from each of these analyses which are statistically significant without multiple hypothesis testing correction (p < 0.05), with correction for multiple hypothesis testing by the Benjamini-Hochberg method (False Discovery Rate < 0.05), and with correction for multiple hypothesis testing by the Bonferroni method (Family Wise Error Rate < 0.05). 
+
+```{r, eval = FALSE}
 plot.data.true.real <- data.frame(x.values = seq(from = 0, to = 1, length.out = 1E3))
 plot.data.true.real$y.values <- ecdf((2*pnorm(q = abs(true.real.dpa.res$nes), lower.tail = FALSE)))(plot.data.true.real$x.values)
 plot.data.true.real$group.values <- "Real-Real"
@@ -397,9 +465,13 @@ cur.y.lab <- "Empirical Cumulative Probability"
 cur.colour.lab <- "Regulon-GES Combo"
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.breaks)) + geom_hline(colour = "black", lwd = 1, yintercept = range(y.breaks)) + geom_abline(colour = "black", lwd = 1, intercept = 0, slope = 1, linetype = "dashed") + geom_line(aes(x = x.values, y = y.values, colour = group.values), lwd = 1.5) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_7.png){#id .class width=100% height=100%}
 
+When the null hypothesis is true, the `NaRnEA` two-sided p-values should be uniformly distributed on the interval [0,1], producing an empirical cumulative distribution function which tracks along the diagonal of the plot (black dashed line). We see that the `NaRnEA` two-sided p-values for the enrichment of the ARACNe-inferred regulon gene sets in the LUAD vs. LUNG gene expression signature fall above that line, which is what we would expect if the null hypothesis is not true for some subset of these regulon gene sets. We also see that the `NaRnEA` two-sided p-values for the enrichment of the ARACNe-inferred regulon gene sets in the LUAD vs. LUNG gene expression signature fall above that line, which is what we would expect if the null hypothesis is not true for some subset of these regulon gene sets.
+
+```{r, eval = FALSE}
 # visualize the enrichment of the regulon gene set for FOXM1 in the LUAD vs. LUNG gene expression signature with an approximate 95% confidence interval inferred with the bootstrap percentile method
 set.seed(sim.seed)
 
@@ -429,9 +501,11 @@ cur.subtitle <- paste("NaRnEA"," : ", "PES = ", signif(cur.enrichment.res$pes, s
 cur.x.lab <- "LUAD vs. LUNG Gene Expression Signature"
 
 EnrichmentAnalysisPlot(cur.ges = real.luad.vs.lung.ges, cur.regul = true.regulon.list[[cur.entrez.name]], cur.title = cur.title, cur.subtitle = cur.subtitle, cur.x.lab = cur.x.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_8.png){#id .class width=100% height=100%}
 
+```{r, eval = FALSE}
 # visualize the enrichment of the regulon gene set for CENPF in the LUAD vs. LUNG gene expression signature with an approximate 95% confidence interval inferred with the bootstrap percentile method
 set.seed(sim.seed)
 
@@ -461,10 +535,11 @@ cur.subtitle <- paste("NaRnEA"," : ", "PES = ", signif(cur.enrichment.res$pes, s
 cur.x.lab <- "LUAD vs. LUNG Gene Expression Signature"
 
 EnrichmentAnalysisPlot(cur.ges = real.luad.vs.lung.ges, cur.regul = true.regulon.list[[cur.entrez.name]], cur.title = cur.title, cur.subtitle = cur.subtitle, cur.x.lab = cur.x.lab)
+```
 
-ggsave(filename = paste("Fig_",figure.output.value,"_",(1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_",figure.output.value,"_",sep = "")))),".png",sep = ""), path = "PNG_Figures", dpi = 500, device = "png")
+![](../man/figures/Fig_2_9.png){#id .class width=100% height=100%}
 
-
+```{r, eval = FALSE}
 ## Permutation Test for Equality of FOXM1 and CENFP regulon gene set enrichment
 
 # assign the FOXM1 regulon gene set as gene set a and the CENPF regulon gene set as gene set b
@@ -540,11 +615,12 @@ cur.x.lab <- "| (Null FOXM1 PES)  - (Null CENPF PES) |"
 cur.y.lab <- "Probability Density"
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = range(x.breaks)) + geom_density(aes(x = x.values, y = ..density..), colour = "red1", fill = "red1", alpha = .25, lwd = 1) + geom_vline(colour = "red1", lwd = 1.5, xintercept = abs(synthetic.gene.set.a.enrichment$pes - synthetic.gene.set.b.enrichment$pes), linetype = "dashed") + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
+```
 
-ggsave(filename = paste("Fig_", figure.output.value, "_", (1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_", figure.output.value, "_", sep = "")))), ".png", sep = ""), device = "png", path = "PNG_Figures", dpi = 500)
+![](../man/figures/Fig_2_10.png){#id .class width=100% height=100%}
 
 
-
+```{r, eval = FALSE}
 ## Permutation Test for Interaction between the FOXM1 regulon gene set and the CENPF regulon gene set
 
 # assign the FOXM1 regulon gene set as gene set a and the CENPF regulon gene set as gene set b
@@ -645,10 +721,11 @@ cur.colour.lab <- "Regulon Gene Set"
 cur.fill.lab <- cur.colour.lab
 
 ggplot(plot.data) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_density(aes(x = x.values, y = ..density.., colour = group.values, fill = group.values), alpha = .25, lwd = 1) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 18), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom") + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab, fill = cur.fill.lab) + scale_colour_manual(values = colour.value.vec) + scale_fill_manual(values = fill.value.vec) + geom_vline(colour = "red1", lwd = 1, linetype = "dashed", xintercept = synthetic.gene.set.c.enrichment$pes) + geom_vline(colour = "blue1", lwd = 1, linetype = "dashed", xintercept = synthetic.gene.set.d.enrichment$pes)
+```
 
-ggsave(filename = paste("Fig_", figure.output.value, "_", (1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_", figure.output.value, "_", sep = "")))), ".png", sep = ""), device = "png", path = "PNG_Figures", dpi = 500)
+![](../man/figures/Fig_2_11.png){#id .class width=100% height=100%}
 
-
+```{r, eval = FALSE}
 # Leading Edge Analysis for FOXM1 and CENPF
 
 # assign the FOXM1 regulon gene set as gene set a and the CENPF regulon gene set as gene set b
@@ -698,12 +775,10 @@ cur.x.lab <- "Regulon Gene Set Member"
 cur.colour.lab <- "Regulon Gene Set Membership"
 
 ggplot(plot.data) + geom_hline(colour = "black", lwd = 1, yintercept = 0) + facet_wrap(~set.values, ncol = 1, scales = "free") + geom_segment(aes(x = y.values, xend = y.values, y = z.values, yend = 0, colour = group.values), lwd = .75) + scale_colour_manual(values = colour.value.vec) + scale_y_continuous(limits = range(z.breaks), breaks = z.breaks) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.y = element_text(hjust = 1, colour = "black", size = 18), axis.text.x = element_blank(), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom", strip.text = element_text(hjust = 0.5, colour = "black", size = 20), axis.ticks.x = element_blank()) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.colour.lab, fill = cur.fill.lab)
-
-ggsave(filename = paste("Fig_", figure.output.value, "_", (1 + length(list.files(path = "PNG_Figures", pattern = paste("Fig_", figure.output.value, "_", sep = "")))), ".png", sep = ""), device = "png", path = "PNG_Figures", dpi = 500)
-
-
-
 ```
+
+![](../man/figures/Fig_2_12.png){#id .class width=100% height=100%}
+
 
 
 
