@@ -1,5 +1,6 @@
 ---
 title: "NaRnEA User Guide - Part 1"
+author: Aaron T. Griffin, Lukas Vlahos, Andrea Califano
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{NaRnEA User Guide - Part 1}
