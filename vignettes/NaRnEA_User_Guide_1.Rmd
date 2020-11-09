@@ -16,7 +16,7 @@ opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(widt
 
 ## Introduction
 
-Non-parametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel statistical method created by Griffin et al. in 2020 for the purpose of performing powerful and accurate gene set analysis. To read more about the theory behind NaRnEA and how it compares with Gene Set Enrichment Analysis (GSEA), which was created by Subramanian et al. in 2005, check out the preprint of the NaRnEA manuscript on bioRxiv ([link](https://www.biorxiv.org/search/NaRnEA)).
+Non-parametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel statistical method created by Griffin et al. in 2020 for the purpose of performing powerful and accurate gene set analysis. To read more about the theory behind `NaRnEA` and how it compares with Gene Set Enrichment Analysis (GSEA), which was created by Subramanian et al. in 2005, check out the preprint of the `NaRnEA` manuscript on bioRxiv ([link](https://www.biorxiv.org/search/NaRnEA)).
 
 ### Installing NaRnEA
 
@@ -38,7 +38,7 @@ library(NaRnEA)
 
 ### Simulated Gene Expression Signatures
 
-Simulated data offers the perfect way to familiarize ourselves with `NaRnEA` and gene set analysis in general. Once we've worked our way through these simulated data we'll proceed with leveraging `NaRnEA` to identify Master Regulators of lung cancer in the NaRnEA User Guide - Part 2. 
+Simulated data offers the perfect way to familiarize ourselves with `NaRnEA` and gene set analysis in general. Once we've worked our way through these simulated data we'll proceed with leveraging `NaRnEA` to identify Master Regulators of lung cancer in the `NaRnEA` User Guide - Part 2. 
 
 The statistician George Box popularized the idea that "all models are wrong, but some are useful." While transcriptomic data from eukaryotic systems is undoubtedly more complex than the simulated data we will be using, our level of control over the simulated data, and by extension our knowledge of the true state of the data, is far greater than anything we can ever achieve in the real world.
 

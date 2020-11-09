@@ -16,7 +16,7 @@ opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(widt
 
 ## Introduction
 
-Non-parametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel statistical method created by Griffin et al. in 2020 for the purpose of performing powerful and accurate gene set analysis. To read more about the theory behind NaRnEA and how it compares with Gene Set Enrichment Analysis (GSEA), which was created by Subramanian et al. in 2005, check out the preprint of the NaRnEA manuscript on bioRxiv ([link](https://www.biorxiv.org/search/NaRnEA)).
+Non-parametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel statistical method created by Griffin et al. in 2020 for the purpose of performing powerful and accurate gene set analysis. To read more about the theory behind `NaRnEA` and how it compares with Gene Set Enrichment Analysis (GSEA), which was created by Subramanian et al. in 2005, check out the preprint of the `NaRnEA` manuscript on bioRxiv ([link](https://www.biorxiv.org/search/NaRnEA)).
 
 ### Installing NaRnEA
 
@@ -44,7 +44,7 @@ library(NaRnEA)
 
 ## Real World Gene Expression Data
 
-In Part 1 of the `NaRnEA` User Guide we demonstrated how to perform powerful and accurate gene set analysis in a non-parametric manner with `NaRnEA` using simulated data; now we'll turn our attention to leveraging NaRnEA for a unique type of gene set analysis; identifying Master Regulators of lung cancer using a systems biology approach.
+In Part 1 of the `NaRnEA` User Guide we demonstrated how to perform powerful and accurate gene set analysis in a non-parametric manner with `NaRnEA` using simulated data; now we'll turn our attention to leveraging `NaRnEA` for a unique type of gene set analysis; identifying Master Regulators of lung cancer using a systems biology approach.
 
 ### Lung Adenocarcinoma 
 
@@ -346,7 +346,7 @@ In this modified volcano plot the `NaRnEA` effect size (PES) is on the x-axis an
 
 In Part 1 of the `NaRnEA` User Guide we demonstrated that `NaRnEA` can accurately control the Type I error rate of gene set analysis using simulated data; however, can we be certain that it will control the Type I error rate of gene set analysis in real world data, which is often much messier? If the Type I error rate is not accurately controlled, then the putative Master Regulators of the LUAD phenotype that were identified by `NaRnEA` may be riddled with false positives.  
 
-In order to test whether `NaRnEA` accurately controls the Type I error rate of gene set analysis with real world data in two ways we'll take two approaches. First,  we'll create a shuffled gene expression signature by shuffling the gene identifiers of the original gene expression signature. Because we've shuffled the genes we've essentially destroyed any biological correlation that originally existed, which virtually guarantees that the null hypothesis of gene set analysis is true for all of our regulon gene sets. We can then test each regulon gene set for enrichment in this shuffled gene expression signature; any significant enrichment results will indicate that the offending regulon gene set is either too small or is not adequately parameterized for `NaRnEA` to guarantee accurate control of the Type I error rate. We can visualize the NaRnEA-inferred differential protein activity for the real regulon gene sets in the shuffled LUAD vs. LUNG gene expression signature once again using our modified volcano plot. 
+In order to test whether `NaRnEA` accurately controls the Type I error rate of gene set analysis with real world data in two ways we'll take two approaches. First,  we'll create a shuffled gene expression signature by shuffling the gene identifiers of the original gene expression signature. Because we've shuffled the genes we've essentially destroyed any biological correlation that originally existed, which virtually guarantees that the null hypothesis of gene set analysis is true for all of our regulon gene sets. We can then test each regulon gene set for enrichment in this shuffled gene expression signature; any significant enrichment results will indicate that the offending regulon gene set is either too small or is not adequately parameterized for `NaRnEA` to guarantee accurate control of the Type I error rate. We can visualize the `NaRnEA`-inferred differential protein activity for the real regulon gene sets in the shuffled LUAD vs. LUNG gene expression signature once again using our modified volcano plot. 
 
 ```{r, eval = FALSE}
 set.seed(sim.seed)
