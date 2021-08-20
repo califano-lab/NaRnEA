@@ -1,199 +1,253 @@
-#' Non-parametric analytical rank-based enrichment analysis (NaRnEA) function
+#' Nonparametric analytical rank-based enrichment analysis (NaRnEA) function
 #' 
-#' @param ges Gene expression signature (named numeric vector)
-#' @param regulon Gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)
-#' @param minsize Minimum number of gene set members that are present in the gene expression signature. Default of 30.
-#' @param seed Random number generator seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.
-#' @param leading.edge Flag to compute leading edge p-values for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).
-#' @return A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge p-values (if specified).
+#' @param signature Gene expression signature (named numeric vector)
+#' @param regulation.confidence Regulation Confidence values for gene set members (named numeric vector)
+#' @param mode.of.regulation Mode of Regulation values for gene set members (named numeric vector)
+#' @param ledge Flag to compute ledge p-values for gene set members.
+#' @param minimum.size Minimum number of gene set members. Default of 30.
+#' @param seed Random number generator seed to ensure reproducibility manner. Default of 1.
+#' @return A list with the Proportional Enrichment Score (PES), Normalized Enrichment Score (NES), and the leading edge p-values (NA if ledge set to FALSE).
 #' @export
-NaRnEA <- function(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE){
+
+NaRnEA <- function(signature, regulation.confidence, mode.of.regulation, ledge = TRUE, minimum.size = 30, seed = 1){
   
   # set the seed
   set.seed(seed)
   
-  # remove NAs and zeroes from the gene expression signature
-  cur.ges <- ges[which(!(ges == 0 | is.na(ges)))]
+  # set the input values to local variables
+  cur.sig <- signature
+  cur.rc.values <- regulation.confidence
+  cur.mor.values <- mode.of.regulation
   
-  # subset the gene set to only include targets which are present in the gene expression signature
-  cur.regul <- regulon
-  cur.regul$tfmode <- regulon$tfmode[which(names(regulon$tfmode)%in%names(cur.ges))]
-  cur.regul$likelihood <- regulon$likelihood[which(names(regulon$tfmode)%in%names(cur.ges))]
+  # check that the Regulation Confidence values are positive
+  if(!prod(cur.rc.values > 0)){
+    stop("... regulation.confidence values must be positive ...")
+  } 
   
-  # if the gene set is below the minimum size, return NA for all output values
-  if(length(cur.regul$tfmode) < minsize){
-    cur.res.list <- list(pes = NA, nes = NA, nes.max = NA, nes.min = NA, ledge = NA)
-    return(cur.res.list)
+  # check that the Mode of Regulation values are between (-1) and (1)
+  if(!prod(abs(cur.mor.values) <= 1)){
+    stop("... mode.of.regulation values must be between (-1) and (1) ...")
   }
   
-  # modify the Mode of Regulation values so that they are not equal to 1 or 0
-  cur.regul$tfmode[which(abs(cur.regul$tfmode) == 1)] <- cur.regul$tfmode[which(abs(cur.regul$tfmode) == 1)]*(.999)
-  cur.regul$tfmode[which(abs(cur.regul$tfmode) == 0)] <- (0.001)
+  # correct and Mode of Regulation values which are exactly equal to 0 or exactly equal to 1 
+  cur.mor.values[which(abs(cur.mor.values) == 1)] <- 0.999*sign(cur.mor.values[which(abs(cur.mor.values) == 1)])
+  cur.mor.values[which(cur.mor.values == 0)] <- sample(c(0.001, -0.001), size = length(which(cur.mor.values == 0)), replace = TRUE, prob = c(mean(cur.mor.values[which(cur.mor.values != 0)] > 0), mean(cur.mor.values[which(cur.mor.values != 0)] < 0)))
   
-  # compute the non-parametric gene expression signature transformation
-  cur.ges.rank <- rank(abs(cur.ges), ties.method = "random")
-  cur.ges.sign <- sign(cur.ges)
+  # check that the names for the Regulation Confidence and Mode of Regulation match and return an error message if they do not
+  if(identical(names(cur.rc.values),names(cur.mor.values))){
+    cur.target.values <- names(cur.rc.values)
+  } else {
+    stop("... regulation.confidence and mode.of.regulation must have the same names ...")
+  }
   
-  # compute the number of genes in the gene expression signature
-  cur.gene.num <- length(cur.ges)
+  # compute the nonparametric signature transformation if no missing values or repeated entries are present; if missing values or repeated entries are present in the signature, return an error message
+  if(anyNA(cur.sig)){
+    stop("... signature cannot contain missing values ...")
+  } else if(!prod(!duplicated(names(cur.sig)))){
+    stop("... signature cannot contain duplicate entries ...")
+  } else if(prod(cur.sig != 0)){
+    cur.np.sig <- rank(x = abs(as.numeric(cur.sig)), ties.method = "random")*sign(as.numeric(cur.sig))
+    names(cur.np.sig) <- names(cur.sig)
+  } else {
+    cur.sig[which(cur.sig == 0)] <- runif(n = length(cur.sig[which(cur.sig == 0)]), min = max(cur.sig[which(cur.sig < 0)]), max = min(cur.sig[which(cur.sig > 0)]))
+    cur.np.sig <- rank(x = abs(as.numeric(cur.sig)), ties.method = "random")*sign(as.numeric(cur.sig))
+    names(cur.np.sig) <- names(cur.sig)
+  }
   
-  # identify the index of the gene set targets in the gene expression signature
-  cur.idx <- match(names(cur.regul$tfmode),names(cur.ges))
+  # check that all of the target names are in the gene expression signature and return an error message if any are not
+  if(mean(cur.target.values%in%names(cur.np.sig)) < 1){
+    stop("... not all of the gene set members are present in the gene expression signature ...")
+  }
   
-  # compute the directed enrichment score for the gene set
-  cur.directed.es.values <- (cur.regul$likelihood) * (cur.regul$tfmode) * (cur.ges.rank[cur.idx]) * (cur.ges.sign[cur.idx])
+  # return an error message if the gene set is below the minimum size; if not, compute the indices for each gene set member
+  if(length(cur.target.values) < minimum.size){
+    stop("... gene set is too small ...")
+  } else {
+    cur.idx.values <- match(cur.target.values,names(cur.np.sig))
+  }
+  
+  # compute the Directed Enrichment Score for the gene set
+  cur.directed.es.values <- (cur.rc.values)*(cur.mor.values)*(cur.np.sig[cur.idx.values]) 
   cur.directed.es <- sum(cur.directed.es.values)
   
-  # compute the expected value of the directed enrichment score for the gene set under the null hypothesis
-  cur.directed.es.mean.values <- (cur.regul$likelihood) * (cur.regul$tfmode) * mean( (cur.ges.rank) * (cur.ges.sign))
-  cur.directed.es.mean <- as.numeric(sum(cur.directed.es.mean.values))
+  # compute the Normalized Directed Enrichment Score for the gene set
+  cur.directed.es.mean.values <- (cur.rc.values)*(cur.mor.values)*mean(cur.np.sig)
+  cur.directed.es.mean <- sum(cur.directed.es.mean.values)
   
-  # compute the variance of the directed enrichment score for the gene set under the null hypothesis
-  cur.directed.es.var.values <- (cur.regul$likelihood)^2 * (cur.regul$tfmode)^2 * (1/6) * (2*cur.gene.num^2 + 3*cur.gene.num + 1) - (cur.directed.es.mean.values)^2
-  cur.directed.es.var <- as.numeric(sum(cur.directed.es.var.values))
+  cur.directed.es.var.values <- (cur.rc.values^2)*(cur.mor.values^2)*(2*length(cur.np.sig)^2 + 3*length(cur.np.sig) + 1)*(1/6) - (cur.directed.es.mean.values^2)
+  cur.directed.es.var <- sum(cur.directed.es.var.values)
   
-  # compute the directed normalized enrichment score for the gene set
-  cur.directed.nes <- (cur.directed.es - cur.directed.es.mean) / sqrt(cur.directed.es.var)
+  cur.directed.nes <- (cur.directed.es - cur.directed.es.mean)/sqrt(cur.directed.es.var)
   
-  # compute the undirected enrichment score for the gene set
-  cur.undirected.es.values <- (cur.regul$likelihood) * (1 - abs(cur.regul$tfmode)) * (cur.ges.rank[cur.idx])
-  cur.undirected.es <- as.numeric(sum(cur.undirected.es.values))
+  # compute the Undirected Enrichment Score for the gene set
+  cur.undirected.es.values <- (cur.rc.values)*(1 - abs(cur.mor.values))*(abs(cur.np.sig)[cur.idx.values])
+  cur.undirected.es <- sum(cur.undirected.es.values)
   
-  # compute the expected value of the undirected enrichment score for the gene set under the null hypothesis
-  cur.undirected.es.mean.values <- (cur.regul$likelihood) * (1 - abs(cur.regul$tfmode)) * (1/2) * (cur.gene.num + 1)
-  cur.undirected.es.mean <- as.numeric(sum(cur.undirected.es.mean.values))
+  # compute the Normalized Undirected Enrichment Score for the gene set
+  cur.undirected.es.mean.values <- (cur.rc.values)*(1 - abs(cur.mor.values))*(length(cur.np.sig) + 1)*(1/2)
+  cur.undirected.es.mean <- sum(cur.undirected.es.mean.values)
   
-  # compute the variance of the undirected enrichment score for the gene set under the null hypothesis
-  cur.undirected.es.var.values <- (cur.regul$likelihood)^2 * (1 - abs(cur.regul$tfmode))^2 * (1/6) * (2*cur.gene.num^2 + 3*cur.gene.num + 1) - (cur.undirected.es.mean.values)^2
-  cur.undirected.es.var <- as.numeric(sum(cur.undirected.es.var.values))
+  cur.undirected.es.var.values <- (cur.rc.values^2)*((1 - abs(cur.mor.values))^2)*(2*length(cur.np.sig)^2 + 3*length(cur.np.sig) + 1)*(1/6) - (cur.undirected.es.mean.values^2)
+  cur.undirected.es.var <- sum(cur.undirected.es.var.values)
   
-  # compute the undirected normalized enrichment score for the gene set
-  cur.undirected.nes <- (cur.undirected.es - cur.undirected.es.mean) / sqrt(cur.undirected.es.var)
+  cur.undirected.nes <- (cur.undirected.es - cur.undirected.es.mean)/sqrt(cur.undirected.es.var)
   
-  # compute the covariance between the directed and undirected enrichment scores for the gene set under the null hypothesis
-  cur.directed.es.undirected.es.mean.values <- (cur.regul$likelihood)^2 * (cur.regul$tfmode) * (1 - abs(cur.regul$tfmode)) * mean( (cur.ges.rank)^2 * (cur.ges.sign))
-  cur.directed.es.undirected.es.covar <- (cur.directed.es.mean.values) %*% t(cur.undirected.es.mean.values)
-  diag(cur.directed.es.undirected.es.covar) <- cur.directed.es.undirected.es.mean.values
-  cur.directed.es.undirected.es.covar <- sum(cur.directed.es.undirected.es.covar) - sum(cur.directed.es.mean.values) * sum(cur.undirected.es.mean.values)
+  # compute the covariance between the Normalized Directed Enrichment Score and the Normalized Undirected Enrichment Score under the null hypothesis
+  cur.directed.es.undirected.es.mean.mat <- matrix(data = cur.directed.es.mean.values, nrow = length(cur.directed.es.mean.values), ncol = length(cur.directed.es.mean.values), byrow = TRUE)*matrix(data = cur.undirected.es.mean.values, nrow = length(cur.undirected.es.mean.values), ncol = length(cur.undirected.es.mean.values), byrow = FALSE)
   
-  # compute the Pearson correlation between the directed and undirected enrichment scores for the gene set under the null hypothesis 
-  cur.directed.es.undirected.es.cor <- (cur.directed.es.undirected.es.covar) / sqrt( (cur.directed.es.var) * (cur.undirected.es.var) )
+  diag(cur.directed.es.undirected.es.mean.mat) <- (cur.rc.values^2)*(cur.mor.values)*(1 - abs(cur.mor.values))*mean(cur.np.sig*abs(cur.np.sig))
   
-  # compute the final normalized enrichment score for the gene set
-  cur.nes.plus <- ( cur.directed.nes + cur.undirected.nes ) / sqrt( 2 + 2 * (cur.directed.es.undirected.es.cor) )
-  cur.nes.minus <- ( cur.directed.nes - cur.undirected.nes ) / sqrt( 2 - 2 * (cur.directed.es.undirected.es.cor) )
+  cur.directed.es.undirected.es.mean <- sum(cur.directed.es.undirected.es.mean.mat)
+  
+  cur.directed.es.undirected.es.covariance <- cur.directed.es.undirected.es.mean - (cur.directed.es.mean)*(cur.undirected.es.mean)
+  
+  cur.directed.nes.undirected.nes.covariance <- cur.directed.es.undirected.es.covariance/sqrt((cur.directed.es.var)*(cur.undirected.es.var))
+  
+  # compute the final Normalized Enrichment Score for the gene set
+  cur.nes.plus <- (cur.directed.nes + cur.undirected.nes)/sqrt(2 + 2*(cur.directed.nes.undirected.nes.covariance))
   cur.plus.log.p.value <- pnorm(q = cur.nes.plus, lower.tail = FALSE, log.p = TRUE)
+  
+  cur.nes.minus <- (cur.directed.nes - cur.undirected.nes)/sqrt(2 - 2*(cur.directed.nes.undirected.nes.covariance))
   cur.minus.log.p.value <- pnorm(q = cur.nes.minus, lower.tail = TRUE, log.p = TRUE)
-  cur.min.log.p.value <- min(cur.plus.log.p.value, cur.minus.log.p.value)
-  cur.final.log.p.value <- cur.min.log.p.value + log(2 - exp(cur.min.log.p.value))
-  if(cur.plus.log.p.value == min(cur.plus.log.p.value, cur.minus.log.p.value)){
+  
+  cur.final.log.p.value <- (min(c(cur.plus.log.p.value,cur.minus.log.p.value))) + log(2) + log1p((exp(min(c(cur.plus.log.p.value,cur.minus.log.p.value)))/(-2)))
+  
+  if(cur.plus.log.p.value < cur.minus.log.p.value){
     cur.final.nes <- qnorm(p = (cur.final.log.p.value - log(2)), lower.tail = FALSE, log.p = TRUE)
   } else {
     cur.final.nes <- qnorm(p = (cur.final.log.p.value - log(2)), lower.tail = TRUE, log.p = TRUE)
   }
   
-  # compute the maximum directed enrichment score for the gene set and corresponding undirected enrichment score for the gene set
-  cur.directed.es.max.values <- sort( (cur.regul$likelihood) * (cur.regul$tfmode), decreasing = TRUE)
-  cur.undirected.es.max.values <- (cur.regul$likelihood) * (1 - abs(cur.regul$tfmode))
-  cur.undirected.es.max.values <- cur.undirected.es.max.values[match(names(cur.directed.es.max.values),names(cur.undirected.es.max.values))]
-  if(sum(cur.directed.es.max.values > 0) == 0){
-    cur.directed.es.max.ges.values <- as.numeric(rev(sort((cur.ges.rank*cur.ges.sign), decreasing = FALSE)[seq(from = 1, to = sum(cur.directed.es.max.values < 0), by = 1)]))
-  } else if(sum(cur.directed.es.max.values < 0) == 0){
-    cur.directed.es.max.ges.values <- as.numeric(sort((cur.ges.rank*cur.ges.sign), decreasing = TRUE)[seq(from = 1, to = sum(cur.directed.es.max.values > 0), by = 1)])
-  } else {
-    cur.directed.es.max.ges.values <- as.numeric(c(sort((cur.ges.rank*cur.ges.sign), decreasing = TRUE)[seq(from = 1, to = sum(cur.directed.es.max.values > 0), by = 1)],rev(sort((cur.ges.rank*cur.ges.sign), decreasing = FALSE)[seq(from = 1, to = sum(cur.directed.es.max.values < 0), by = 1)])))
-  }
-  cur.directed.es.max.values <- (cur.directed.es.max.values) * (cur.directed.es.max.ges.values)
-  cur.undirected.es.max.values <- (cur.undirected.es.max.values) * abs(cur.directed.es.max.ges.values)
-  cur.directed.es.max <- as.numeric(sum(cur.directed.es.max.values))
-  cur.undirected.es.max <- as.numeric(sum(cur.undirected.es.max.values))
+  # compute the Proportional Enrichment Score for the gene set
+  if(cur.final.nes > 0){
   
-  # compute the minimum directed enrichment score for the gene set and corresponding undirected enrichment score for the gene set
-  cur.directed.es.min.values <- sort( (cur.regul$likelihood) * (cur.regul$tfmode), decreasing = TRUE)
-  cur.undirected.es.min.values <- (cur.regul$likelihood) * (1 - abs(cur.regul$tfmode))
-  cur.undirected.es.min.values <- cur.undirected.es.min.values[match(names(cur.directed.es.min.values),names(cur.undirected.es.min.values))]
-  if(sum(cur.directed.es.min.values > 0) == 0){
-    cur.directed.es.min.ges.values <- as.numeric(rev(sort((cur.ges.rank*cur.ges.sign), decreasing = TRUE)[seq(from = 1, to = sum(cur.directed.es.min.values < 0), by = 1)]))
-  } else if(sum(cur.directed.es.min.values < 0) == 0){
-    cur.directed.es.min.ges.values <- as.numeric(sort((cur.ges.rank*cur.ges.sign), decreasing = FALSE)[seq(from = 1, to = sum(cur.directed.es.min.values > 0), by = 1)])
-  } else {
-    cur.directed.es.min.ges.values <- as.numeric(c(sort((cur.ges.rank*cur.ges.sign), decreasing = FALSE)[seq(from = 1, to = sum(cur.directed.es.min.values > 0), by = 1)],rev(sort((cur.ges.rank*cur.ges.sign), decreasing = TRUE)[seq(from = 1, to = sum(cur.directed.es.min.values < 0), by = 1)])))
-  }
-  cur.directed.es.min.values <- (cur.directed.es.min.values) * (cur.directed.es.min.ges.values)
-  cur.undirected.es.min.values <- (cur.undirected.es.min.values) * abs(cur.directed.es.min.ges.values)
-  cur.directed.es.min <- as.numeric(sum(cur.directed.es.min.values))
-  cur.undirected.es.min <- as.numeric(sum(cur.undirected.es.min.values))
-  
-  # compute the maximum directed normalized enrichment score for the gene set
-  cur.directed.nes.max <- (cur.directed.es.max - cur.directed.es.mean) / sqrt(cur.directed.es.var)
-  
-  # compute the maximum undirected normalized enrichment score for the gene set
-  cur.undirected.nes.max <- (cur.undirected.es.max - cur.undirected.es.mean) / sqrt(cur.undirected.es.var)
-  
-  # compute the minimum directed normalized enrichment score for the gene set
-  cur.directed.nes.min <- (cur.directed.es.min - cur.directed.es.mean) / sqrt(cur.directed.es.var)
-  
-  # compute the minimum undirected normalized enrichment score for the gene set
-  cur.undirected.nes.min <- (cur.undirected.es.min - cur.undirected.es.mean) / sqrt(cur.undirected.es.var)
-  
-  # compute the maximum final normalized enrichment score for the gene set
-  cur.nes.plus <- ( cur.directed.nes.max + cur.undirected.nes.max ) / sqrt( 2 + 2 * (cur.directed.es.undirected.es.cor) )
-  cur.nes.minus <- ( cur.directed.nes.max - cur.undirected.nes.max ) / sqrt( 2 - 2 * (cur.directed.es.undirected.es.cor) )
-  cur.plus.log.p.value <- pnorm(q = cur.nes.plus, lower.tail = FALSE, log.p = TRUE)
-  cur.minus.log.p.value <- pnorm(q = cur.nes.minus, lower.tail = TRUE, log.p = TRUE)
-  cur.min.log.p.value <- min(cur.plus.log.p.value, cur.minus.log.p.value)
-  cur.final.log.p.value <- cur.min.log.p.value + log(2 - exp(cur.min.log.p.value))
-  cur.final.nes.max <- qnorm(p = (cur.final.log.p.value - log(2)), lower.tail = FALSE, log.p = TRUE)
-  
-  # compute the minimum final normalized enrichment score for the gene set
-  cur.nes.plus <- ( cur.directed.nes.min + cur.undirected.nes.min ) / sqrt( 2 + 2 * (cur.directed.es.undirected.es.cor) )
-  cur.nes.minus <- ( cur.directed.nes.min - cur.undirected.nes.min ) / sqrt( 2 - 2 * (cur.directed.es.undirected.es.cor) )
-  cur.plus.log.p.value <- pnorm(q = cur.nes.plus, lower.tail = FALSE, log.p = TRUE)
-  cur.minus.log.p.value <- pnorm(q = cur.nes.minus, lower.tail = TRUE, log.p = TRUE)
-  cur.min.log.p.value <- min(cur.plus.log.p.value, cur.minus.log.p.value)
-  cur.final.log.p.value <- cur.min.log.p.value + log(2 - exp(cur.min.log.p.value))
-  cur.final.nes.min <- (-1) * qnorm(p = (cur.final.log.p.value - log(2)), lower.tail = FALSE, log.p = TRUE)
-  
-  # compute the final proportional enrichment score for the gene set
-  if(is.na(cur.final.nes)){
-    cur.res.list <- list(nes = NA, pes = NA)
-    return(cur.res.list)
-  } else if(cur.final.nes > 0){
-    cur.final.pes <- (cur.final.nes) / abs(cur.final.nes.max)
-    cur.final.pes <- min(c(1, cur.final.pes))
-  } else {
-    cur.final.pes <- (cur.final.nes) / abs(cur.final.nes.min)
-    cur.final.pes <- max(c(-1, cur.final.pes))
-  }
-  
-  # computing the leading edge p-values for the gene set if desired
-  if(leading.edge){
-    if(cur.final.pes > 0){
-      cur.ledge.values <- cur.directed.es.values + cur.undirected.es.values
-      cur.ledge.p.values <- sapply(names(cur.ledge.values),function(cur.gene){
-        cur.gene.ic.value <- as.numeric(cur.regul$likelihood[match(cur.gene,names(cur.regul$tfmode))])
-        cur.gene.mor.value <- as.numeric(cur.regul$tfmode[match(cur.gene,names(cur.regul$tfmode))])
-        cur.gene.null.ledge.values <- (cur.gene.ic.value)*(cur.gene.mor.value)*(cur.ges.rank)*(cur.ges.sign) + (cur.gene.ic.value)*(1 - abs(cur.gene.mor.value))*(cur.ges.rank)
-        cur.gene.ledge.p.value <- (1 + sum((cur.gene.null.ledge.values > as.numeric(cur.ledge.values[match(cur.gene,names(cur.ledge.values))]))))/(1 + length(cur.gene.null.ledge.values))
-        return(cur.gene.ledge.p.value)
-      })
-    } else {
-      cur.ledge.values <- cur.directed.es.values - cur.undirected.es.values
-      cur.ledge.p.values <- sapply(names(cur.ledge.values),function(cur.gene){
-        cur.gene.ic.value <- as.numeric(cur.regul$likelihood[match(cur.gene,names(cur.regul$tfmode))])
-        cur.gene.mor.value <- as.numeric(cur.regul$tfmode[match(cur.gene,names(cur.regul$tfmode))])
-        cur.gene.null.ledge.values <- (cur.gene.ic.value)*(cur.gene.mor.value)*(cur.ges.rank)*(cur.ges.sign) - (cur.gene.ic.value)*(1 - abs(cur.gene.mor.value))*(cur.ges.rank)
-        cur.gene.ledge.p.value <- (1 + sum((cur.gene.null.ledge.values < as.numeric(cur.ledge.values[match(cur.gene,names(cur.ledge.values))]))))/(1 + length(cur.gene.null.ledge.values))
-        return(cur.gene.ledge.p.value)
-      })
+    # compute the target indices which correspond with supreme positive gene set enrichment
+    max.idx.values <- cur.idx.values
+    if(sum(cur.mor.values > 0) > 0){
+      # max.idx.values[which(cur.mor.values > 0)] <- match(names(rev(sort(cur.np.sig[which(cur.np.sig > 0)], decreasing = TRUE)[seq(from = 1, to = length(which(cur.mor.values > 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values > 0)], ties.method = "random")]), names(cur.np.sig))
+      max.idx.values[which(cur.mor.values > 0)] <- match(names(rev(sort(cur.np.sig, decreasing = TRUE)[seq(from = 1, to = length(which(cur.mor.values > 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values > 0)], ties.method = "random")]), names(cur.np.sig))
     }
-    cur.final.ledge <- cur.ledge.p.values
+    if(sum(cur.mor.values < 0) > 0){
+      # max.idx.values[which(cur.mor.values < 0)] <- match(names(rev(sort(cur.np.sig[which(cur.np.sig < 0)], decreasing = FALSE)[seq(from = 1, to = length(which(cur.mor.values < 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values < 0)], ties.method = "random")]), names(cur.np.sig))
+      max.idx.values[which(cur.mor.values < 0)] <- match(names(rev(sort(cur.np.sig, decreasing = FALSE)[seq(from = 1, to = length(which(cur.mor.values < 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values < 0)], ties.method = "random")]), names(cur.np.sig))
+    }
+    
+    # compute the Directed Enrichment Score for the supreme positive gene set enrichment target indices
+    max.directed.es.values <- (cur.rc.values)*(cur.mor.values)*(cur.np.sig[max.idx.values])
+    max.directed.es <- sum(max.directed.es.values)
+    
+    # compute the Normalized Directed Enrichment Score for the supreme positive gene set enrichment target indices
+    max.directed.nes <- (max.directed.es - cur.directed.es.mean)/sqrt(cur.directed.es.var)
+    
+    # compute the Undirected Enrichment Score for the supreme positive gene set enrichment target indices
+    max.undirected.es.values <- (cur.rc.values)*(1 - abs(cur.mor.values))*(abs(cur.np.sig)[max.idx.values])
+    max.undirected.es <- sum(max.undirected.es.values)
+    
+    # compute the Normalized Undirected Enrichment Score for the supreme positive gene set enrichment target indices
+    max.undirected.nes <- (max.undirected.es - cur.undirected.es.mean)/sqrt(cur.undirected.es.var)
+    
+    # compute the final Normalized Enrichment Score for the supreme positive gene set enrichment target indices
+    max.nes.plus <- (max.directed.nes + max.undirected.nes)/sqrt(2 + 2*(cur.directed.nes.undirected.nes.covariance))
+    max.plus.log.p.value <- pnorm(q = max.nes.plus, lower.tail = FALSE, log.p = TRUE)
+    
+    max.final.log.p.value <- (max.plus.log.p.value) + log(2) + log1p((exp(max.plus.log.p.value)/(-2)))
+    
+    max.final.nes <- qnorm(p = (max.final.log.p.value - log(2)), lower.tail = FALSE, log.p = TRUE)
+    
+    # compute the Proportional Enrichment Score for the gene set
+    cur.final.pes <- (cur.final.nes/abs(max.final.nes))
+    cur.final.pes <- min(c(cur.final.pes,1))
+    
   } else {
-    cur.final.ledge <- NA
+  
+    # compute the target indices which correspond with supreme negative gene set enrichment
+    min.idx.values <- cur.idx.values
+    if(sum(cur.mor.values > 0) > 0){
+      # min.idx.values[which(cur.mor.values > 0)] <- match(names(rev(sort((-1*cur.np.sig)[which((-1*cur.np.sig) > 0)], decreasing = TRUE)[seq(from = 1, to = length(which(cur.mor.values > 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values > 0)], ties.method = "random")]), names((-1*cur.np.sig)))
+      min.idx.values[which(cur.mor.values > 0)] <- match(names(rev(sort((-1*cur.np.sig), decreasing = TRUE)[seq(from = 1, to = length(which(cur.mor.values > 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values > 0)], ties.method = "random")]), names((-1*cur.np.sig)))
+    }
+    if(sum(cur.mor.values < 0) > 0){
+      # min.idx.values[which(cur.mor.values < 0)] <- match(names(rev(sort((-1*cur.np.sig)[which((-1*cur.np.sig) < 0)], decreasing = FALSE)[seq(from = 1, to = length(which(cur.mor.values < 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values < 0)], ties.method = "random")]), names((-1*cur.np.sig)))
+      min.idx.values[which(cur.mor.values < 0)] <- match(names(rev(sort((-1*cur.np.sig), decreasing = FALSE)[seq(from = 1, to = length(which(cur.mor.values < 0)), by = 1)])[rank(cur.rc.values[which(cur.mor.values < 0)], ties.method = "random")]), names((-1*cur.np.sig)))
+    }
+    
+    # compute the Directed Enrichment Score for the supreme negative gene set enrichment target indices
+    min.directed.es.values <- (cur.rc.values)*(cur.mor.values)*(cur.np.sig[min.idx.values])
+    min.directed.es <- sum(min.directed.es.values)
+    
+    # compute the Normalized Directed Enrichment Score for the supreme negative gene set enrichment target indices
+    min.directed.nes <- (min.directed.es - cur.directed.es.mean)/sqrt(cur.directed.es.var)
+    
+    # compute the Undirected Enrichment Score for the supreme negative gene set enrichment target indices
+    min.undirected.es.values <- (cur.rc.values)*(1 - abs(cur.mor.values))*(abs(cur.np.sig)[min.idx.values])
+    min.undirected.es <- sum(min.undirected.es.values)
+    
+    # compute the Normalized Undirected Enrichment Score for the supreme negative gene set enrichment target indices
+    min.undirected.nes <- (min.undirected.es - cur.undirected.es.mean)/sqrt(cur.undirected.es.var)
+    
+    # compute the final Normalized Enrichment Score for the supreme negative gene set enrichment target indices
+    min.nes.minus <- (min.directed.nes - min.undirected.nes)/sqrt(2 - 2*(cur.directed.nes.undirected.nes.covariance))
+    min.minus.log.p.value <- pnorm(q = min.nes.minus, lower.tail = TRUE, log.p = TRUE)
+    
+    min.final.log.p.value <- (min.minus.log.p.value) + log(2) + log1p((exp(min.minus.log.p.value)/(-2)))
+    
+    min.final.nes <- qnorm(p = (min.final.log.p.value - log(2)), lower.tail = TRUE, log.p = TRUE)
+    
+    # compute the Proportional Enrichment Score for the gene set
+    cur.final.pes <- (cur.final.nes/abs(min.final.nes))
+    cur.final.pes <- max(c(cur.final.pes,-1))
+  
   }
   
-  # return the normalized enrichment score, the proportional enrichment score, the maximum normalized enrichment score, the minimum normalized enrichment score, and the leading edge p-values (if desired) for the gene set
-  cur.res.list <- list(pes = cur.final.pes, nes = cur.final.nes, nes.max = cur.final.nes.max, nes.min = cur.final.nes.min, ledge = cur.final.ledge)
-  return(cur.res.list)
+  # compute the ledge p-values for the gene set if desired
+  if(ledge){
+    if(cur.final.pes > 0){
+      
+      cur.ledge.p.values <- sapply(cur.target.values,function(sub.target.value){
+        
+        # compute the ledge score for the current gene set member
+        sub.ledge.score <- (1 - abs(cur.mor.values))[match(sub.target.value, names(cur.mor.values))]*(abs(cur.np.sig)[cur.idx.values[match(sub.target.value, names(cur.mor.values))]]) + (cur.mor.values)[match(sub.target.value, names(cur.mor.values))]*(cur.np.sig[cur.idx.values[match(sub.target.value, names(cur.mor.values))]])
+        
+        # compute the null ledge scores for the current gene set member
+        sub.ledge.null <- (1 - abs(cur.mor.values))[match(sub.target.value, names(cur.mor.values))]*(abs(cur.np.sig)) + (cur.mor.values)[match(sub.target.value, names(cur.mor.values))]*(cur.np.sig)
+        
+        # compute the ledge p-value for the current gene set member
+        sub.ledge.p.value <- mean((sub.ledge.null >= sub.ledge.score))
+        return(sub.ledge.p.value)
+        
+      })
+      
+    } else {
+      
+      cur.ledge.p.values <- sapply(cur.target.values,function(sub.target.value){
+        
+        # compute the ledge score for the current gene set member
+        sub.ledge.score <- (1 - abs(cur.mor.values))[match(sub.target.value, names(cur.mor.values))]*(abs(cur.np.sig)[cur.idx.values[match(sub.target.value, names(cur.mor.values))]]) - (cur.mor.values)[match(sub.target.value, names(cur.mor.values))]*(cur.np.sig[cur.idx.values[match(sub.target.value, names(cur.mor.values))]])
+        
+        # compute the null ledge scores for the current gene set member
+        sub.ledge.null <- (1 - abs(cur.mor.values))[match(sub.target.value, names(cur.mor.values))]*(abs(cur.np.sig)) - (cur.mor.values)[match(sub.target.value, names(cur.mor.values))]*(cur.np.sig)
+        
+        # compute the ledge p-value for the current gene set member
+        sub.ledge.p.value <- mean((sub.ledge.null >= sub.ledge.score))
+        return(sub.ledge.p.value)
+        
+      })
+      
+    }
+  } else {
+    cur.ledge.p.values <- rep(NA, times = length(cur.target.values))
+    names(cur.ledge.p.values) <- cur.target.values
+  }
   
+  # return the Proportional Enrichment Score, the final Normalized Enrichment Score, and the ledge p-values (if desired) for the gene set 
+  cur.final.res.list <- list(pes = cur.final.pes, nes = cur.final.nes, ledge = cur.ledge.p.values)
+  return(cur.final.res.list)
+
 }
+
+
+
+
+
+
+

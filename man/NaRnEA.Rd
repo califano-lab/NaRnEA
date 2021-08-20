@@ -2,24 +2,33 @@
 % Please edit documentation in R/NaRnEA.R
 \name{NaRnEA}
 \alias{NaRnEA}
-\title{Non-parametric analytical rank-based enrichment analysis (NaRnEA) function}
+\title{Nonparametric analytical rank-based enrichment analysis (NaRnEA) function}
 \usage{
-NaRnEA(ges, regulon, minsize = 30, seed = 1, leading.edge = FALSE)
+NaRnEA(
+  signature,
+  regulation.confidence,
+  mode.of.regulation,
+  ledge = TRUE,
+  minimum.size = 30,
+  seed = 1
+)
 }
 \arguments{
-\item{ges}{Gene expression signature (named numeric vector)}
+\item{signature}{Gene expression signature (named numeric vector)}
 
-\item{regulon}{Gene set parameterized with Regulation Confidence (likelihood) and Mode of Regulation (tfmode)}
+\item{regulation.confidence}{Regulation Confidence values for gene set members (named numeric vector)}
 
-\item{minsize}{Minimum number of gene set members that are present in the gene expression signature. Default of 30.}
+\item{mode.of.regulation}{Mode of Regulation values for gene set members (named numeric vector)}
 
-\item{seed}{Random number generator seed to ensure ties in the gene expression signature are broken in a reproducible manner. Default of 1.}
+\item{ledge}{Flag to compute ledge p-values for gene set members.}
 
-\item{leading.edge}{Flag to compute leading edge p-values for the members of the gene set; FALSE by default (setting to TRUE will enable post-hoc leading edge analysis but will increase computational time).}
+\item{minimum.size}{Minimum number of gene set members. Default of 30.}
+
+\item{seed}{Random number generator seed to ensure reproducibility manner. Default of 1.}
 }
 \value{
-A list with the normalized enrichment score (NES), proportional enrichment score (PES), maximum and minimum possible NES, and the leading edge p-values (if specified).
+A list with the Proportional Enrichment Score (PES), Normalized Enrichment Score (NES), and the leading edge p-values (NA if ledge set to FALSE).
 }
 \description{
-Non-parametric analytical rank-based enrichment analysis (NaRnEA) function
+Nonparametric analytical rank-based enrichment analysis (NaRnEA) function
 }
