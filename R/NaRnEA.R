@@ -1,23 +1,23 @@
 #' Nonparametric analytical rank-based enrichment analysis (NaRnEA) function
 #' 
 #' @param signature Gene expression signature (named numeric vector)
-#' @param regulation.confidence Regulation Confidence values for gene set members (named numeric vector)
-#' @param mode.of.regulation Mode of Regulation values for gene set members (named numeric vector)
+#' @param association.weight Association Weight values for gene set members (named numeric vector)
+#' @param association.mode Association Mode values for gene set members (named numeric vector)
 #' @param ledge Flag to compute ledge p-values for gene set members.
 #' @param minimum.size Minimum number of gene set members. Default of 30.
 #' @param seed Random number generator seed to ensure reproducibility manner. Default of 1.
 #' @return A list with the Proportional Enrichment Score (PES), Normalized Enrichment Score (NES), and the leading edge p-values (NA if ledge set to FALSE).
 #' @export
 
-NaRnEA <- function(signature, regulation.confidence, mode.of.regulation, ledge = TRUE, minimum.size = 30, seed = 1){
+NaRnEA <- function(signature, association.weight, association.mode, ledge = TRUE, minimum.size = 30, seed = 1){
   
   # set the seed
   set.seed(seed)
   
   # set the input values to local variables
   cur.sig <- signature
-  cur.rc.values <- regulation.confidence
-  cur.mor.values <- mode.of.regulation
+  cur.rc.values <- association.weight
+  cur.mor.values <- association.mode
   
   # check that the Regulation Confidence values are positive
   if(!prod(cur.rc.values > 0)){
@@ -49,7 +49,8 @@ NaRnEA <- function(signature, regulation.confidence, mode.of.regulation, ledge =
     cur.np.sig <- rank(x = abs(as.numeric(cur.sig)), ties.method = "random")*sign(as.numeric(cur.sig))
     names(cur.np.sig) <- names(cur.sig)
   } else {
-    cur.sig[which(cur.sig == 0)] <- runif(n = length(cur.sig[which(cur.sig == 0)]), min = max(cur.sig[which(cur.sig < 0)]), max = min(cur.sig[which(cur.sig > 0)]))
+  	set.seed(seed)
+	cur.sig[which(cur.sig == 0)] <- runif(n = sum(cur.sig == 0), min = 0, max = min(abs(cur.sig[which(cur.sig != 0)])))*sample(c(-1,1), size = sum(cur.sig == 0), replace = TRUE, prob = c(mean(cur.sig[which(cur.sig != 0)] < 0),mean(cur.sig[which(cur.sig != 0)] > 0)))
     cur.np.sig <- rank(x = abs(as.numeric(cur.sig)), ties.method = "random")*sign(as.numeric(cur.sig))
     names(cur.np.sig) <- names(cur.sig)
   }

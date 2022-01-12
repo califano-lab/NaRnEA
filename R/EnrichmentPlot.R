@@ -1,16 +1,16 @@
 #' Nonparametric analytical Rank-based Enrichment Analysis plotting function
 #' 
 #' @param signature Gene expression signature (named numeric vector)
-#' @param regulation.confidence Regulation Confidence values for gene set members (named numeric vector)
-#' @param mode.of.regulation Mode of Regulation values for gene set members (named numeric vector)
+#' @param association.weight Association Weight values for gene set members (named numeric vector)
+#' @param association.mode Association Mode values for gene set members (named numeric vector)
 #' @param minimum.size Minimum number of gene set members. Default of 30.
 #' @param seed Random number generator seed to ensure reproducibility manner. Default of 1.
 #' @param title.text Text for title of the plot. 
 #' @param x.label.text Text for x-axis label of the plot. 
 #' @param line.width Line width for the gene set member segments in the nonparametric gene expression signature. 
-#' @param lower.color Color for the gene set members with negative Mode of Regulation values.
-#' @param middle.color Color for the gene set members with Mode of Regulation values close to zero.
-#' @param upper.color Color for the gene set members with positive Mode of Regulation values. 
+#' @param lower.color Color for the gene set members with negative Association Mode values.
+#' @param middle.color Color for the gene set members with Association Mode values close to zero.
+#' @param upper.color Color for the gene set members with positive Association Mode values. 
 #' @param conf.int Flag to compute the confidence interval for the NaRnEA Proportional Enrichment Score using a Fisher Transformation and gene set member sampling with replacement.
 #' @param conf.level Desired coverage of the confidence interval for the NaRnEA Proportional Enrichment Score. Default of 0.95.
 #' @param boot.num Number of times to sample the gene set members with replacement when estimating the confidence interval for the NaRnEA Proportional Enrichment Score. Default of 100. 
@@ -18,7 +18,7 @@
 #' @return This function returns the NaRnEA Proportional Enrichment Score (PES) with a confidence interval (if desired), the NaRnEA Normalized Enrichment Score (NES), the NaRnEA two-sided p-value of the NaRnEA, and a figure made with ggplot2 that visualizes the enrichment of the gene set members in the nonparametrically transformed differential gene expression signature. 
 #' @export
 
-EnrichmentPlot <- function(signature, regulation.confidence, mode.of.regulation, minimum.size = 30, seed = 1, title.text = "Nonparametric analytical Rank-based Enrichment Analysis", x.label.text = "Nonparametric Gene Expression Signature", line.width = 1, lower.color = "blue1", middle.color = "grey50", upper.color = "red1", conf.int = TRUE, conf.level = 0.95, boot.num = 100, sig.figs = 4){
+EnrichmentPlot <- function(signature, association.weight, association.mode, minimum.size = 30, seed = 1, title.text = "Nonparametric analytical Rank-based Enrichment Analysis", x.label.text = "Nonparametric Gene Expression Signature", line.width = 1, lower.color = "blue1", middle.color = "grey50", upper.color = "red1", conf.int = TRUE, conf.level = 0.95, boot.num = 100, sig.figs = 4){
 	
 	# set the seed if ggplot2 can be loaded and return a warning if not
 	cur.check.value <- suppressWarnings(require("ggplot2", quietly = TRUE))
@@ -32,28 +32,28 @@ EnrichmentPlot <- function(signature, regulation.confidence, mode.of.regulation,
 	
 	# set the input values to local variables
 	cur.sig <- signature
-	cur.rc.values <- regulation.confidence
-	cur.mor.values <- mode.of.regulation
+	cur.rc.values <- association.weight
+	cur.mor.values <- association.mode
 	
-	# check that the Regulation Confidence values are positive
+	# check that the Association Weight values are positive
 	if(!prod(cur.rc.values > 0)){
-		stop("... regulation.confidence values must be positive ...")
+		stop("... association.weight values must be positive ...")
 	} 
 	
-	# check that the Mode of Regulation values are between (-1) and (1)
+	# check that the Association Mode values are between (-1) and (1)
 	if(!prod(abs(cur.mor.values) <= 1)){
-		stop("... mode.of.regulation values must be between (-1) and (1) ...")
+		stop("... association.mode values must be between (-1) and (1) ...")
 	}
 	
-	# correct and Mode of Regulation values which are exactly equal to 0 or exactly equal to 1 
+	# correct and Association Mode values which are exactly equal to 0 or exactly equal to 1 
 	cur.mor.values[which(abs(cur.mor.values) == 1)] <- 0.999*sign(cur.mor.values[which(abs(cur.mor.values) == 1)])
 	cur.mor.values[which(cur.mor.values == 0)] <- sample(c(0.001, -0.001), size = length(which(cur.mor.values == 0)), replace = TRUE, prob = c(mean(cur.mor.values[which(cur.mor.values != 0)] > 0), mean(cur.mor.values[which(cur.mor.values != 0)] < 0)))
 	
-	# check that the names for the Regulation Confidence and Mode of Regulation match and return an error message if they do not
+	# check that the names for the Association Weight and Association Mode match and return an error message if they do not
 	if(identical(names(cur.rc.values),names(cur.mor.values))){
 		cur.target.values <- names(cur.rc.values)
 	} else {
-		stop("... regulation.confidence and mode.of.regulation must have the same names ...")
+		stop("... association.weight and association.mode must have the same names ...")
 	}
 	
 	# compute the nonparametric signature transformation if no missing values or repeated entries are present; if missing values or repeated entries are present in the signature, return an error message
@@ -62,6 +62,8 @@ EnrichmentPlot <- function(signature, regulation.confidence, mode.of.regulation,
 	} else if(!prod(!duplicated(names(cur.sig)))){
 		stop("... signature cannot contain duplicate entries ...")
 	} else {
+		set.seed(seed)
+		cur.sig[which(cur.sig == 0)] <- runif(n = sum(cur.sig == 0), min = 0, max = min(abs(cur.sig[which(cur.sig != 0)])))*sample(c(-1,1), size = sum(cur.sig == 0), replace = TRUE, prob = c(mean(cur.sig[which(cur.sig != 0)] < 0),mean(cur.sig[which(cur.sig != 0)] > 0)))
 		cur.np.sig <- rank(x = abs(as.numeric(cur.sig)), ties.method = "random")*sign(as.numeric(cur.sig))
 		names(cur.np.sig) <- names(cur.sig)
 	}
@@ -74,7 +76,7 @@ EnrichmentPlot <- function(signature, regulation.confidence, mode.of.regulation,
 	}
 	
 	# compute the enrichment with NaRnEA
-	cur.narnea.res.list <- NaRnEA(signature = signature, regulation.confidence = regulation.confidence, mode.of.regulation = mode.of.regulation, ledge = FALSE, minimum.size = minimum.size, seed = seed)
+	cur.narnea.res.list <- NaRnEA(signature = signature, association.weight = association.weight, association.mode = association.mode, ledge = FALSE, minimum.size = minimum.size, seed = seed)
 	names(cur.narnea.res.list) <- c("pes.value","nes.value","log.p.value")
 	cur.narnea.res.list$log.p.value <- (pnorm(q = abs(cur.narnea.res.list$nes.value), lower.tail = FALSE, log.p = TRUE) + log(2))
 	cur.narnea.res.list$p.value <- exp(cur.narnea.res.list$log.p.value)
@@ -97,7 +99,7 @@ EnrichmentPlot <- function(signature, regulation.confidence, mode.of.regulation,
 		cur.boot.pes.values <- sapply(cur.boot.idx.list, function(sub.idx.values){
 			sub.rc.values <- cur.rc.values[sub.idx.values]
 			sub.mor.values <- cur.mor.values[sub.idx.values]
-			sub.pes.value <- NaRnEA(signature = signature, regulation.confidence = sub.rc.values, mode.of.regulation = sub.mor.values, ledge = FALSE, minimum.size = minimum.size, seed = seed)$pes
+			sub.pes.value <- NaRnEA(signature = signature, association.weight = sub.rc.values, association.mode = sub.mor.values, ledge = FALSE, minimum.size = minimum.size, seed = seed)$pes
 			return(sub.pes.value)
 		})
 		cur.pes.lower.bound <- tanh((atanh(cur.narnea.res.list$pes.value) + qt(p = ((1 - conf.level)/2), lower.tail = TRUE, df = (boot.num - 1), log.p = FALSE)*sd(atanh(cur.boot.pes.values))))
@@ -105,6 +107,7 @@ EnrichmentPlot <- function(signature, regulation.confidence, mode.of.regulation,
 		cur.pes.conf.int <- c(cur.pes.lower.bound, cur.pes.upper.bound)
 		cur.pes.conf.int[1] <- max(c(cur.pes.conf.int[1],-1))
 		cur.pes.conf.int[2] <- min(c(cur.pes.conf.int[2],1))
+		cur.pes.conf.int[which(is.na(cur.pes.conf.int))] <- cur.narnea.res.list$pes.value
 	}
 	
 	# plot the targets in the nonparametrically transformed gene expression signature
