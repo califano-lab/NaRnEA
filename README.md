@@ -2,7 +2,7 @@
 
 ## NaRnEA (Nonparametric analytical Rank-based Enrichment Analysis)
 
-Nonparametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel statistical method created by Griffin et al. for the purpose of performing powerful and accurate gene set analysis. To read more about the theory behind `NaRnEA` and how it compares with Gene Set Enrichment Analysis (`GSEA`) and Virtual Inference of Protein-activity by Enriched Regulon analysis (`VIPER`), check out the preprint of the `NaRnEA` manuscript on bioRxiv ([link](https://www.biorxiv.org)).
+Nonparametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel statistical method created by Griffin et al. for the purpose of performing powerful and accurate gene set analysis. To read more about the theory behind `NaRnEA` and how it compares with Gene Set Enrichment Analysis (`GSEA`) and analytical Rank-based Enrichment Analysis (`aREA`), check out the preprint of the `NaRnEA` manuscript on bioRxiv ([link](https://www.biorxiv.org/content/10.1101/2021.10.02.462873v2.full)).
 
 ## Installing the NaRnEA R package
 
