@@ -6,7 +6,7 @@ Nonparametric analytical Rank-based Enrichment Analysis (`NaRnEA`) is a novel st
 
 ## Installing the NaRnEA R package
 
-To install the `NaRnEA` R package, download the zipped GitHub codebase, unzip it, and install locally with the `devtools` package using the code below (if the unzipped directory is named `NaRnEA-master`, change this to `NaRnEA` to ensure subsequent code functionality). The `NaRnEA` GitHub codebase also includes proteomic data and code for running `ARACNe3`, the newest implementation of the Algorithm for the Reconstruction of Accurate Cellular Networks, so that users can replicate the analysis from the `NaRnEA` manuscript. The code is freely available for academic research use; for more information, see the license associated with the `NaRnEA` GitHub codebase. To run `ARACNe3` users will need to install the latest version of JDK.
+To install the `NaRnEA` R package, download the zipped GitHub codebase, unzip it, and install locally with the `devtools` package using the code below (if the unzipped directory is named `NaRnEA-main`, change this to `NaRnEA` to ensure subsequent code functionality). The `NaRnEA` GitHub codebase also includes proteomic data and code for running `ARACNe3`, the newest implementation of the Algorithm for the Reconstruction of Accurate Cellular Networks, so that users can replicate the analysis from the `NaRnEA` manuscript. The code is freely available for academic research use; for more information, see the license associated with the `NaRnEA` GitHub codebase. To run `ARACNe3` users will need to install the latest version of JDK.
 
 ```{r}
 devtools::install(pkg = "NaRnEA", build_vignettes = TRUE)
