@@ -177,10 +177,7 @@ vector<double> apmiIterator(vector<vector<double>> quadrant_obj, double q_thresh
 // takes in two vectors, p-value and size thresholds
 // returns vector of MI values for each region
 // [[Rcpp::export]]
-vector<double> APMI(vector<double> vec_x, vector<double> vec_y, double p_thresh = 0.05, int size_thresh = 4) {
-	// determine pass_down variables
-	boost::math::chi_squared chi_dist(1);
-	double q_thresh = boost::math::quantile(chi_dist, 1 - p_thresh);
+vector<double> APMI(vector<double> vec_x, vector<double> vec_y, double q_thresh = 7.814728, int size_thresh = 4) {
 	int tot_samps = vec_x.size();
 	// make initial quad_obj
 	vector<vector<double>> quad_obj;
