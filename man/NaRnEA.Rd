@@ -6,8 +6,8 @@
 \usage{
 NaRnEA(
   signature,
-  regulation.confidence,
-  mode.of.regulation,
+  association.weight,
+  association.mode,
   ledge = TRUE,
   minimum.size = 30,
   seed = 1
@@ -16,9 +16,9 @@ NaRnEA(
 \arguments{
 \item{signature}{Gene expression signature (named numeric vector)}
 
-\item{regulation.confidence}{Regulation Confidence values for gene set members (named numeric vector)}
+\item{association.weight}{Association Weight values for gene set members (named numeric vector)}
 
-\item{mode.of.regulation}{Mode of Regulation values for gene set members (named numeric vector)}
+\item{association.mode}{Association Mode values for gene set members (named numeric vector)}
 
 \item{ledge}{Flag to compute ledge p-values for gene set members.}
 

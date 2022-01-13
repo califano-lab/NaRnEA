@@ -6,8 +6,8 @@
 \usage{
 EnrichmentPlot(
   signature,
-  regulation.confidence,
-  mode.of.regulation,
+  association.weight,
+  association.mode,
   minimum.size = 30,
   seed = 1,
   title.text = "Nonparametric analytical Rank-based Enrichment Analysis",
@@ -25,9 +25,9 @@ EnrichmentPlot(
 \arguments{
 \item{signature}{Gene expression signature (named numeric vector)}
 
-\item{regulation.confidence}{Regulation Confidence values for gene set members (named numeric vector)}
+\item{association.weight}{Association Weight values for gene set members (named numeric vector)}
 
-\item{mode.of.regulation}{Mode of Regulation values for gene set members (named numeric vector)}
+\item{association.mode}{Association Mode values for gene set members (named numeric vector)}
 
 \item{minimum.size}{Minimum number of gene set members. Default of 30.}
 
@@ -39,11 +39,11 @@ EnrichmentPlot(
 
 \item{line.width}{Line width for the gene set member segments in the nonparametric gene expression signature.}
 
-\item{lower.color}{Color for the gene set members with negative Mode of Regulation values.}
+\item{lower.color}{Color for the gene set members with negative Association Mode values.}
 
-\item{middle.color}{Color for the gene set members with Mode of Regulation values close to zero.}
+\item{middle.color}{Color for the gene set members with Association Mode values close to zero.}
 
-\item{upper.color}{Color for the gene set members with positive Mode of Regulation values.}
+\item{upper.color}{Color for the gene set members with positive Association Mode values.}
 
 \item{conf.int}{Flag to compute the confidence interval for the NaRnEA Proportional Enrichment Score using a Fisher Transformation and gene set member sampling with replacement.}
 
