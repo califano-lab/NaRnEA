@@ -2,11 +2,16 @@ Package: NaRnEA
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    c(person(given = "Aaron",
+           family = "Griffin",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "atg2142@cumc.columbia.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+	person(given = "Lukas",
+           family = "Vlahos",
+           role = c("aut"),
+           email = "lv2395@cumc.columbia.edu",
+           comment = c(ORCID = "0000-0002-4083-6924")))
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
