@@ -18,15 +18,15 @@ opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, tidy.opts=list(widt
 
 ##### This code is designed to reproduce the analysis from the manuscript "An Information Theoretic Framework for Protein Activity Measurement" for the lung adenocarcinoma (LUAD) cancer subtype using data from The Cancer Genome Atlas (TCGA) and the Clinical Proteomic Tumor Analysis Consortium (CPTAC).
 
-
 ### Citing `NaRnEA` and `ARACNe3`
 
 ##### If you use `NaRnEA` and/or `ARACNe3` in your research, please cite our preprint on bioRxiv [here](https://www.biorxiv.org/content/10.1101/2021.10.02.462873v2).
 
+***
+
 ### Prepare the Workspace
 
 ##### All the packages needed for this vignette can be found on CRAN, BioConductor, or Github. The code below was optimized on a MacBook; if you are running this code on another operating system, some commands may need to be changed. For example, the `system` command should be replaced by `shell` for users running this code on a Windows machine. 
-
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # create the figure output directory
@@ -182,7 +182,6 @@ saveRDS(object = cur.network.tumor.counts.mat, file = paste(cur.output.dir,"/TCG
 
 ##### Before reverse-engineering the transcriptional regulatory network, we normalize the unpaired gene expression profiles for sequencing depth as counts per million (CPM). The CPM values for each gene are then copula-transformed across the unpaired gene expression profiles; this procedure simplifies the estimation of mutual information via adaptive partitioning by ensuring that gene expression marginals are explicitly uniform. As a final pre-processing step, we subset our list of putative transcriptional regulators to those which are represented in the unpaired gene expression profiles. 
 
-
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # normalize network tumor gene expression profiles for sequencing depth (counts per million)
 cur.network.tumor.cpm.mat <- apply(cur.network.tumor.counts.mat,2,function(x){
@@ -204,7 +203,6 @@ sub.regulator.names <- cur.regulator.names[which(cur.regulator.names%in%rownames
 ##### `ARACNe3` generates decorrelated estimates of the transcriptional regulatory network topology (i.e. subnetworks) by subsampling from the entire set of gene expression profiles provided by the user. A subsampling proportion of ~63.21% is used to achieve an equivalent level of decorrelation to a sample bootstrapping procedure (i.e. sampling with replacement). Subsampling is used instead of sample bootstrapping as sample bootstrapping increases the bias and variance of the adaptive partitioning mutual information estimator. 
 
 ##### We generate a list of subsampling indices, one for each subnetwork, which we refer to as folds. These subnetworks will be reverse-engineered and integrated until a stopping criterion is met; in our case, the stopping criterion is that every regulator has at least 50 targets. 
-
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # create the subnetwork downsampling fold list 
@@ -411,7 +409,6 @@ while(((cur.stop.check.value == 0) & (cur.subnetwork.fold.num < cur.max.subnetwo
 
 ##### After the stopping criterion has been met, the putative transcriptional regulatory interactions from all subnetworks are integrated to form a context-specific, ensemble `ARACNe3` transcriptional regulatory network. The Spearman correlation coefficient is computed between each putative regulator and each putative target using all gene expression profiles (i.e. without subsampling); this is taken to be the Association Mode for `NaRnEA`. The mutual information is computed between each putative regulator and each putative target using all gene expression profiles (i.e. without subsampling); this is used, along with the number of subnetworks in which a putative transcriptional regulatory interaction appeared, to compute the Association Weight for `NaRnEA`. 
 
-
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # extract the regulator and target names from the final compiled ARACNe3 network data
 cur.regulator.values <- strsplit(x = names(compiled.edge.counts), split = "---", fixed = TRUE)
@@ -502,8 +499,8 @@ cur.tumor.vs.tissue.mwu.ges <- sapply(rownames(cur.combo.vsd.mat), function(sub.
 	sub.test.values <- as.numeric(sub.total.values)[sub.test.idx]
 	sub.ref.values <- as.numeric(sub.total.values)[sub.ref.idx]
 	sub.wilcox.res <- wilcox.test(x = sub.test.values, y = sub.ref.values, paired = FALSE, alternative = "two.sided")
-	sub.rbs.value <- (2*as.numeric(sub.wilcox.res$statistic)/(length(sub.test.idx)*length(sub.ref.idx)) - 1)
-	return(sub.rbs.value)
+	sub.rbc.value <- (2*as.numeric(sub.wilcox.res$statistic)/(length(sub.test.idx)*length(sub.ref.idx)) - 1)
+	return(sub.rbc.value)
 }, sub.test.idx = which(substr(colnames(cur.combo.vsd.mat), start = 13, stop = 15) == "-01"), sub.ref.idx = which(substr(colnames(cur.combo.vsd.mat), start = 13, stop = 15) == "-11"))
 
 saveRDS(cur.tumor.vs.tissue.mwu.ges, file = paste(cur.output.dir,"/Tumor_vs_Tissue_MWU_GES.rds", sep = ""))
@@ -554,7 +551,7 @@ saveRDS(cur.aracne3.vs.null.narnea.roc, file = paste(cur.output.dir,"/ARACNe3_vs
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # set the location of the GSEA command line bash file
-cur.gsea.script.path <- "GSEA_4.2.1/gsea-cli.sh"
+cur.gsea.script.path <- "GSEA_4.2.2/gsea-cli.sh"
 
 # output the ARACNe3-inferred regulon gene sets in a format compatible with GSEA
 write.table(x = paste(c(names(aracne3.network.data.list)[1],names(aracne3.network.data.list)[1], as.character(aracne3.network.data.list[[1]]$target.values)), collapse = "\t"), file = paste(cur.output.dir,"TCGA_LUAD_ARACNe3_Gene_Sets.gmt",sep = "/"), append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
@@ -636,7 +633,6 @@ saveRDS(cur.aracne3.vs.null.gsea.roc, file = paste(cur.output.dir,"/ARACNe3_vs_N
 ### Test for Gene Set Enrichment with analytical Rank-based Enrichment Analysis (`aREA`)
 
 ##### We use `aREA` to test for the enrichment of `ARACNe3`-inferred regulon gene sets and null gene sets in a differential gene expression signature estimated between primary tumor gene expression profiles and adjacent normal tissue gene expression profiles following the DESeq2 variance stabilizing transformation. The differential gene expression signature here is estimated using Welch's two-sample test from the `viper` R package where the gene-level statistic is the z-score. The `aREA` two-sided p-values for the `ARACNe3`-inferred regulon gene sets and the `aREA` two-sided p-values for the null gene sets are used to construct a receiver operating characteristic (ROC) curve under the alternative hypothesis that the `aREA` two-sided p-values from the null gene sets will stochastically dominate the `aREA` two-sided p-values from the `ARACNe3`-inferred regulon gene sets. Two-sided p-values for `aREA` are estimated using permutation; p-values smaller than their empirical minimum value, which is determined by the total number of permutations, are corrected (i.e. 1/1001).  
-
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # estimate the differential gene expression signature for tumor vs. tissue using the viper rowTtest function
 cur.tumor.vs.tissue.ttest.ges <- rowTtest(x = cur.combo.vsd.mat[,which(substr(colnames(cur.combo.vsd.mat), start = 13, stop = 15) == "-01")], y = cur.combo.vsd.mat[,which(substr(colnames(cur.combo.vsd.mat), start = 13, stop = 15) == "-11")], alternative = "two.sided")
@@ -649,6 +645,28 @@ saveRDS(cur.tumor.vs.tissue.ttest.ges, file = paste(cur.output.dir,"/Tumor_vs_Ti
 cur.tumor.vs.tissue.nullmodel <- ttestNull(x = cur.combo.vsd.mat[,which(substr(colnames(cur.combo.vsd.mat), start = 13, stop = 15) == "-01")], y = cur.combo.vsd.mat[,which(substr(colnames(cur.combo.vsd.mat), start = 13, stop = 15) == "-11")], per = 1000, repos = TRUE, verbose = TRUE)
 
 saveRDS(cur.tumor.vs.tissue.nullmodel, file = paste(cur.output.dir,"/Tumor_vs_Tissue_Ttest_NullModel.rds", sep = ""))
+
+# compute the proportion of these null gene expression signatures are statistically significantly associated with the true gene expression signature
+cur.true.vs.null.ges.scc.res <- lapply(1:ncol(cur.tumor.vs.tissue.nullmodel), function(i){
+	sub.x.values <- as.numeric(cur.tumor.vs.tissue.ttest.ges)
+	sub.y.values <- as.numeric(cur.tumor.vs.tissue.nullmodel[,i])
+	sub.keep.idx <- which(!(is.na(sub.x.values) | is.na(sub.y.values)))
+	sub.x.values <- rank(sub.x.values[sub.keep.idx], ties.method = "random")
+	sub.y.values <- rank(sub.y.values[sub.keep.idx], ties.method = "random")
+	sub.cor.res <- cor.test(x = sub.x.values, y = sub.y.values, method = "spearman")
+	sub.res.vec <- c("scc.values" = as.numeric(sub.cor.res$estimate), "p.values" = sub.cor.res$p.value)
+	return(sub.res.vec)
+})
+cur.true.vs.null.ges.scc.data <- as.data.frame(do.call("rbind", cur.true.vs.null.ges.scc.res))
+cur.true.vs.null.ges.scc.data$fdr.values <- p.adjust(p = cur.true.vs.null.ges.scc.data$p.values, method = "BH")
+cur.true.vs.null.ges.scc.data$fwer.values <- p.adjust(p = cur.true.vs.null.ges.scc.data$p.values, method = "bonferroni")
+
+binom.test(x = sum(cur.true.vs.null.ges.scc.data$p.values < .05), n = nrow(cur.true.vs.null.ges.scc.data), alternative = "two.sided", p = .05)
+
+binom.test(x = sum(cur.true.vs.null.ges.scc.data$fdr.values < .05), n = nrow(cur.true.vs.null.ges.scc.data), alternative = "two.sided", p = .05)
+
+binom.test(x = sum(cur.true.vs.null.ges.scc.data$fwer.values < .05), n = nrow(cur.true.vs.null.ges.scc.data), alternative = "two.sided", p = .05)
+
 
 # test for the enrichment of the ARACNe3-inferred regulon gene sets in the gene expression signature with aREA using the msviper function
 cur.aracne3.interactome <- lapply(aracne3.network.data.list,function(sub.data){
@@ -691,7 +709,6 @@ saveRDS(cur.aracne3.vs.null.area.roc, file = paste(cur.output.dir,"/ARACNe3_vs_N
 ### Visualize the Reciever Operating Characteristic (ROC) Curves for `NaRnEA`, `GSEA`, and `aREA` 
 
 ##### We can now visualize the ROC curves for each gene set analysis method and compare their performance. We can use the Mann-Whitney U test to test the null hypothesis that the area under the ROC curve (AUROC) is equal to 0.5 for each method; we would expect an AUROC of 0.5 for a gene set analysis method which could not accurately distinguish between `ARACNe3`-inferred regulon gene sets and null gene sets. We can use Delong's test to test the null hypothesis that the AUROC for two different gene set analysis methods are equal. From this analysis, we find that `NaRnEA` substantially outperforms both `GSEA` and `aREA`.
-
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # visualize the ability of each method to distinguish between ARACNe3-inferred regulon gene sets and null regulon gene sets using a receiver operating characteristic (ROC) curves with stratified bootstraps to estimate the ROC curve confidence intervals
@@ -740,8 +757,8 @@ sig.figs <- 4
 
 cur.title <- "NaRnEA Manuscript - LUAD"
 cur.subtitle <- paste("NaRnEA AUROC = ", signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.narnea.roc, conf.level = 0.95))[2], sig.figs), " [",signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.narnea.roc, conf.level = 0.95))[1], sig.figs),",",signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.narnea.roc, conf.level = 0.95))[3], sig.figs),"] (p = ",signif(wilcox.test(x = cur.aracne3.vs.null.narnea.roc$cases, y = cur.aracne3.vs.null.narnea.roc$controls, alternative = "less")$p.value, sig.figs),")", "\n", "GSEA AUROC = ", signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.gsea.roc, conf.level = 0.95))[2], sig.figs), " [",signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.gsea.roc, conf.level = 0.95))[1], sig.figs),",",signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.gsea.roc, conf.level = 0.95))[3], sig.figs),"] (p = ",signif(wilcox.test(x = cur.aracne3.vs.null.gsea.roc$cases, y = cur.aracne3.vs.null.gsea.roc$controls, alternative = "less")$p.value, sig.figs),")", "\n", "aREA AUROC = ", signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.area.roc, conf.level = 0.95))[2], sig.figs), " [",signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.area.roc, conf.level = 0.95))[1], sig.figs),",",signif(as.numeric(ci.auc(roc = cur.aracne3.vs.null.area.roc, conf.level = 0.95))[3], sig.figs),"] (p = ",signif(wilcox.test(x = cur.aracne3.vs.null.area.roc$cases, y = cur.aracne3.vs.null.area.roc$controls, alternative = "less")$p.value, sig.figs),")", sep = "")
-cur.x.lab <- "False Positive Rate"
-cur.y.lab <- "True Positive Rate"
+cur.x.lab <- "Proportion of Null Regulons Recovered"
+cur.y.lab <- "Proportion of ARACNe3 Regulons Recovered"
 cur.colour.lab <- "Method"
 cur.fill.lab <- "Method"
 
@@ -749,7 +766,7 @@ ggplot(plot.data) + theme_bw() + geom_hline(colour = "black", lwd = 1, yintercep
 
 ggsave(filename = paste("Fig_", figure.output.value, "_1.png", sep = ""), dpi = 500, path = "PNG_Figures", device = "png", width = 11, height = 11.5, units = "in")
 ```
-![](../man/figures/LUAD_Fig_1_1.png)
+![](../man/figures/Fig_1_1.png)
 
 ### Identify Statistically Significant Gene Set Enrichment for `NaRnEA`, `GSEA`, and `aREA`
 
@@ -757,46 +774,46 @@ ggsave(filename = paste("Fig_", figure.output.value, "_1.png", sep = ""), dpi = 
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # calculate the proportion of ARACNe3-inferred regulon gene sets which are enriched for each method at an FPR of 0.05
-cur.aracne3.narnea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.narnea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.aracne3.gsea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.gsea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.aracne3.area.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "none") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.area.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "none") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
 # calculate the proportion of null regulon gene sets which are enriched for each method at an FPR of 0.05
-cur.null.narnea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.narnea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.null.gsea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.gsea.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.null.area.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "none") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.area.fpr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "none") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
 # calculate the proportion of ARACNe3-inferred regulon gene sets which are enriched for each method at an FDR of 0.05
-cur.aracne3.narnea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.narnea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.aracne3.gsea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.gsea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.aracne3.area.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "BH") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.area.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "BH") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
 # calculate the proportion of null regulon gene sets which are enriched for each method at an FDR of 0.05
-cur.null.narnea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.narnea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.null.gsea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.gsea.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.null.area.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "BH") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.area.fdr.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "BH") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
 # calculate the proportion of ARACNe3-inferred regulon gene sets which are enriched for each method at an FWER of 0.05
-cur.aracne3.narnea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.narnea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.narnea.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.aracne3.gsea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.gsea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.gsea.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.aracne3.area.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "bonferroni") < 0.05), n = length(cur.aracne3.interactome), alternative = "two.sided")$conf.int)[2])
+cur.aracne3.area.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.aracne3.area.p.values, method = "bonferroni") < 0.05), n = length(aracne3.network.data.list), alternative = "two.sided")$conf.int)[2])
 
 # calculate the proportion of null regulon gene sets which are enriched for each method at an FWER of 0.05
-cur.null.narnea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.narnea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.narnea.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.null.gsea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.gsea.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.gsea.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
-cur.null.area.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "bonferroni") < 0.05), n = length(cur.null.interactome), alternative = "two.sided")$conf.int)[2])
+cur.null.area.fwer.conf.int <- c(as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[1], as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$estimate), as.numeric(binom.test(x = sum(p.adjust(p = cur.null.area.p.values, method = "bonferroni") < 0.05), n = length(null.network.data.list), alternative = "two.sided")$conf.int)[2])
 
 # view the results for the ARACNe3-inferred regulon gene sets by method
 cur.aracne3.narnea.fpr.conf.int
@@ -829,7 +846,6 @@ cur.null.area.fwer.conf.int
 
 ##### Volcano plots are often used to visualize the statistical significance of differential gene expression (e.g. negative log-10 p-value) simultaneously with the effect size of differential gene expression (e.g. log-2-fold-change). We can create an analogous plot for gene set enrichment by plotting the absolute value of the `NaRnEA` Normalized Enrichment Score (|NES|) vs. the `NaRnEA` Proportional Enrichment Score (PES). 
 
-
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # visualize the NaRnEA-inferred gene set enrichment using a volcano plot with p-values corrected for multiple hypothesis testing to control the False Discovery Rate at 0.05 according to the methodology of Benjamini and Hochberg
 plot.data <- as.data.frame(do.call("rbind", lapply(cur.aracne3.narnea.res, function(x){
@@ -859,14 +875,13 @@ ggplot(plot.data) + theme_bw() + geom_hline(colour = "black", lwd = 1, yintercep
 
 ggsave(filename = paste("Fig_", figure.output.value, "_2.png", sep = ""), dpi = 500, path = "PNG_Figures", device = "png", width = 12, height = 11, units = "in")
 ```
-![](../man/figures/LUAD_Fig_1_2.png)
+![](../man/figures/Fig_1_2.png)
 
 ### Compare `NaRnEA`-Inferred Gene Set Enrichment from TCGA with Differential Protein Abundance from CPTAC
 
 ##### After correcting for multiple hypothesis testing (FDR < 0.05), `NaRnEA` infers that several hundred `ARACNe3`-inferred regulon gene sets are enriched in the differential gene expression signature between TCGA LUAD primary tumors and adjacent normal tissue. One biological interpretation of positive (or negative) regulon gene set enrichment is that the transcriptional regulatory protein corresponding with the enriched regulon is more (or less) active in the TCGA LUAD primary tumors relative to the adjacent normal tissue. In order to test this hypothesis we can use data from the Clinical Proteomic Tumor Analysis Consortium (CPTAC), which provides proteomic data for dozens of lung adenocarcinoma primary tumors and adjacent normal tissue. While protein abundance is not the only way to regulate transcriptional regulatory protein activity, we hypothesize that at least a significant subset of the transcriptional regulatory proteins should demonstrate differential abundance in agreement with their `NaRnEA`-inferred regulon gene set enrichment.   
 
 ##### Here we subset our analysis to those transcriptional regulatory proteins which are present in the CPTAC dataset and for which a regulon gene set has been reverse-engineered with `ARACNe3`. We can use a Mann-Whitney U test to infer the differential abundance for each of these proteins between CPTAC LUAD primary tumor and adjacent normal tissue, correct for multiple hypothesis testing (FDR < 0.05), and then use a Chi-Squared test to test for an association with the `NaRnEA`-inferred regulon gene set enrichment for each of these proteins between TCGA LUAD primary tumor and adjacent normal tissue. We find that the `NaRnEA`-inferred regulon gene set enrichment in the TCGA LUAD cohort is strongly associated with Mann-Whitney U test-inferred differential protein abundance in the CPTAC LUAD cohort; furthermore, we find that this association is strongly positive based on the fact that Kendall's Tau B correlation coefficient is positive and the congruent categories (TCGA UP & CPTAC UP, TCGA DOWN & CPTAC DOWN) are highly enriched while the incongruent categories (TCGA UP & CPTAC DOWN, TCGA DOWN & CPTAC UP) are substantially depleted. 
-
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # load in the CPTAC protein abundance data for tumor and tissue
@@ -879,8 +894,8 @@ cur.cptac.tumor.vs.tissue.mwu.res <- t(sapply(rownames(cur.cptac.tissue.protein.
 	sub.combo.values <- rank(x = as.numeric(c(unlist(cur.test.data[match(sub.gene,rownames(cur.test.data)),]), unlist(cur.ref.data[match(sub.gene,rownames(cur.ref.data)),]))), ties.method = "random")
 	sub.wilcox.res <- wilcox.test(x = sub.combo.values[seq(from = 1, to = ncol(cur.test.data), by = 1)], y = sub.combo.values[seq(from = (ncol(cur.test.data) + 1), to = (ncol(cur.test.data) + ncol(cur.ref.data)), by = 1)], alternative = "two.sided", paired = FALSE)
 	sub.p.value <- sub.wilcox.res$p.value
-	sub.rbs.value <- 2*as.numeric(sub.wilcox.res$statistic)/(ncol(cur.test.data)*ncol(cur.ref.data)) - 1
-	sub.res.vec <- c("p.values" = sub.p.value, "rbs.values" = sub.rbs.value)
+	sub.rbc.value <- 2*as.numeric(sub.wilcox.res$statistic)/(ncol(cur.test.data)*ncol(cur.ref.data)) - 1
+	sub.res.vec <- c("p.values" = sub.p.value, "rbc.values" = sub.rbc.value)
 	return(sub.res.vec)
 }, cur.test.data = cur.cptac.tumor.protein.data, cur.ref.data = cur.cptac.tissue.protein.data))
 
@@ -907,7 +922,7 @@ sub.aracne3.narnea.res <- sub.aracne3.narnea.res[match(sub.cptac.tumor.vs.tissue
 identical(rownames(sub.aracne3.narnea.res), sub.cptac.tumor.vs.tissue.mwu.res$entrez.values)
 
 # combine the results and correct for multiple hypothesis testing to control the False Discovery Rate at 0.05 using the methodology of Benjamini and Hochberg separately for CPTAC differential protein abundance and TCGA gene set enrichment 
-sub.aracne3.cptac.combo.res <- data.frame(gene.values = as.character(sub.cptac.tumor.vs.tissue.mwu.res$gene.values), entrez.values = as.character(sub.cptac.tumor.vs.tissue.mwu.res$entrez.values), cptac.rbs.values = as.numeric(sub.cptac.tumor.vs.tissue.mwu.res$rbs.values), cptac.p.values = as.numeric(sub.cptac.tumor.vs.tissue.mwu.res$p.values), tcga.pes.values = sub.aracne3.narnea.res$pes.values, tcga.nes.values = sub.aracne3.narnea.res$nes.values)
+sub.aracne3.cptac.combo.res <- data.frame(gene.values = as.character(sub.cptac.tumor.vs.tissue.mwu.res$gene.values), entrez.values = as.character(sub.cptac.tumor.vs.tissue.mwu.res$entrez.values), cptac.rbc.values = as.numeric(sub.cptac.tumor.vs.tissue.mwu.res$rbc.values), cptac.p.values = as.numeric(sub.cptac.tumor.vs.tissue.mwu.res$p.values), tcga.pes.values = sub.aracne3.narnea.res$pes.values, tcga.nes.values = sub.aracne3.narnea.res$nes.values)
 sub.aracne3.cptac.combo.res$tcga.p.values <- 2*pnorm(q = abs(sub.aracne3.cptac.combo.res$tcga.nes.values), lower.tail = FALSE)
 sub.aracne3.cptac.combo.res$tcga.fdr.values <- p.adjust(p = sub.aracne3.cptac.combo.res$tcga.p.values, method = "BH")
 sub.aracne3.cptac.combo.res$cptac.fdr.values <- p.adjust(p = sub.aracne3.cptac.combo.res$cptac.p.values, method = "BH")
@@ -919,8 +934,8 @@ sub.aracne3.cptac.combo.res[which(sub.aracne3.cptac.combo.res$tcga.pes.values < 
 sub.aracne3.cptac.combo.res$tcga.dir.values <- factor(sub.aracne3.cptac.combo.res$tcga.dir.values, levels = c("UP", "NS", "DOWN"))
 
 sub.aracne3.cptac.combo.res$cptac.dir.values <- "NS"
-sub.aracne3.cptac.combo.res[which(sub.aracne3.cptac.combo.res$cptac.rbs.values > 0 & sub.aracne3.cptac.combo.res$cptac.fdr.values < 0.05),"cptac.dir.values"] <- "UP"
-sub.aracne3.cptac.combo.res[which(sub.aracne3.cptac.combo.res$cptac.rbs.values < 0 & sub.aracne3.cptac.combo.res$cptac.fdr.values < 0.05),"cptac.dir.values"] <- "DOWN"
+sub.aracne3.cptac.combo.res[which(sub.aracne3.cptac.combo.res$cptac.rbc.values > 0 & sub.aracne3.cptac.combo.res$cptac.fdr.values < 0.05),"cptac.dir.values"] <- "UP"
+sub.aracne3.cptac.combo.res[which(sub.aracne3.cptac.combo.res$cptac.rbc.values < 0 & sub.aracne3.cptac.combo.res$cptac.fdr.values < 0.05),"cptac.dir.values"] <- "DOWN"
 sub.aracne3.cptac.combo.res$cptac.dir.values <- factor(sub.aracne3.cptac.combo.res$cptac.dir.values, levels = c("DOWN", "NS", "UP"))
 
 saveRDS(object = sub.aracne3.cptac.combo.res, file = paste(cur.output.dir,"/CPTAC_vs_TCGA_ARACNe3_NaRnEA_Res.rds", sep = ""))
@@ -963,3 +978,136 @@ sub.aracne3.vs.cptac.zscore.mat
 sub.aracne3.vs.cptac.fwer.mat
 ```
 
+***
+
+### Additional Analyses 
+
+```{r include = TRUE, echo = TRUE, eval = FALSE}
+# visualize the 50 most activated proteins and 50 most deactivated proteins in a single figure
+cur.top.mr.num <- 50
+cur.bottom.mr.num <- 50
+
+cur.mra.data <- sapply(cur.aracne3.narnea.res, function(x){
+	y <- c("pes.values" = x$pes, "nes.values" = x$nes)
+	return(y)
+})
+cur.mra.data <- as.data.frame(t(cur.mra.data))
+
+sub.mra.data <- cur.mra.data[rev(c(order(cur.mra.data$pes.values, decreasing = TRUE)[seq(from = 1, to = cur.top.mr.num, by = 1)], rev(order(cur.mra.data$pes.values, decreasing = FALSE)[seq(from = 1, to = cur.bottom.mr.num, by = 1)]))),]
+
+sub.network.list <- aracne3.network.data.list
+sub.network.list <- sub.network.list[match(rownames(sub.mra.data), names(sub.network.list))]
+
+cur.sig.values <- cur.tumor.vs.tissue.mwu.ges
+
+cur.np.sig.values <- (rank(abs(cur.sig.values), ties.method = "random")*sign(cur.sig.values))/(length(cur.sig.values) + 1)
+
+cur.x.values <- unlist(lapply(sub.network.list, function(sub.regul.data){
+	sub.res.values <- as.numeric(cur.np.sig.values[match(sub.regul.data$target.values, names(cur.np.sig.values))])
+	return(sub.res.values)
+}), use.names = FALSE)
+
+cur.y.start.values <- unlist(lapply(sub.network.list, function(sub.regul.data){
+	sub.res.values <- as.numeric(match(sub.regul.data$regulator.values, rownames(sub.mra.data)))
+	return(sub.res.values)
+}), use.names = FALSE)
+
+cur.aw.values <- unlist(lapply(sub.network.list, function(sub.regul.data){
+	sub.res.values <- as.numeric(sub.regul.data$aw.values)
+	return(sub.res.values)
+}), use.names = FALSE)
+
+cur.am.values <- unlist(lapply(sub.network.list, function(sub.regul.data){
+	sub.res.values <- as.numeric(sub.regul.data$am.values)
+	return(sub.res.values)
+}), use.names = FALSE) 
+
+cur.y.stop.values <- cur.y.start.values + (0.5*sign(cur.am.values))
+
+plot.data <- data.frame(x.values = cur.x.values, y.start.values = cur.y.start.values, y.stop.values = cur.y.stop.values, aw.values = cur.aw.values, am.values = cur.am.values)
+plot.data$c.values <- ceiling((abs(plot.data$am.values)*100))*sign(plot.data$am.values)
+plot.data$c.values <- factor(plot.data$c.values, levels = seq(from = -100, to = 100, by = 1))
+
+colour.value.vec <- colorRampPalette(colors = c("blue1", "white", "red1"))(length(levels(plot.data$c.values)))
+names(colour.value.vec) <- levels(plot.data$c.values)
+
+x.break.values <- seq(from = -1, to = 1, by = .1)
+
+y.break.values <- seq(from = 0, to = (1 + nrow(sub.mra.data)), by = 1)
+
+y.label.values <- c("",paste(sub.gene.conversion.data[match(rownames(sub.mra.data), sub.gene.conversion.data$entrez.values), "hugo.values"]," : ","PES = ", signif(sub.mra.data$pes.values, sig.figs), " (p = 1e",ceiling(((pnorm(q = abs(sub.mra.data$nes.values), lower.tail = FALSE, log.p = TRUE) + log(2))/log(10))),")", sep = ""), "")
+
+cur.title <- "NaRnEA Manuscript - LUAD"
+cur.subtitle <- "Master Regulator Analysis Plot"
+cur.x.lab <- "Nonparametric Differential Gene Expression Signature"
+cur.y.lab <- "Transcriptional Regulatory Proteins"
+
+ggplot(plot.data) + theme_bw() + geom_vline(colour = "black", lwd = .5, xintercept = 0) + geom_segment(aes(x = x.values, xend = x.values, y = y.start.values, yend = y.stop.values, colour = c.values, alpha = aw.values), lwd = .5) + scale_colour_manual(values = colour.value.vec) + guides(colour = "none", alpha = "none") + scale_x_continuous(limits = range(x.break.values), breaks = x.break.values, expand = expansion(0,0)) + scale_y_continuous(limits = c((min(y.break.values) + .5), (max(y.break.values) - .5)), breaks = y.break.values, labels = y.label.values, expand = expansion(0,0)) + theme(panel.grid.major.y = element_blank(), panel.grid.minor.x = element_blank(), plot.margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt"), plot.title = element_text(hjust = 0.5, colour = "black", size = 25), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 22), axis.title = element_text(hjust = 0.5, colour = "black", size = 20), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 12), axis.text.y = element_text(hjust = 1, colour = "black", size = 7), axis.ticks = element_blank(), panel.border = element_rect(fill = NULL, colour = "black", size = 1), panel.grid.major.x = element_line(colour = "grey50", size = .25, linetype = "dotted"), panel.grid.minor.y = element_line(colour = "grey50", size = .25)) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab)
+
+ggsave(filename = paste("Fig_", figure.output.value, "_3.png", sep = ""), dpi = 500, path = "PNG_Figures", device = "png", width = 15, height = 11, units = "in")
+```
+![](../man/figures/Fig_1_3.png)
+
+```{r include = TRUE, echo = TRUE, eval = FALSE}
+# recompute the enrichment of the ARACNe3 regulons in the differential gene expression signature between primary tumor and adjacent normal tissue with ledge analysis for statistically significantly differentiatlly activated regulators (FWER < 0.05)
+sub.regulator.entrez.values <- sapply(cur.aracne3.narnea.res, function(x){return(x$nes)})
+sub.regulator.entrez.values <- 2*pnorm(q = abs(sub.regulator.entrez.values), lower.tail = FALSE)
+sub.regulator.entrez.values <- p.adjust(p = sub.regulator.entrez.values, method = "bonferroni")
+sub.regulator.entrez.values <- names(sub.regulator.entrez.values)[which(sub.regulator.entrez.values < .05)]
+
+ledge.aracne3.narnea.res <- lapply(sub.regulator.entrez.values, function(sub.reg.value, cur.ges){
+	sub.gene.set.data <- aracne3.network.data.list[[match(sub.reg.value, names(aracne3.network.data.list))]]
+	sub.aw.values <- as.numeric(sub.gene.set.data$aw.values)
+	names(sub.aw.values) <- as.character(sub.gene.set.data$target.values)
+	
+	sub.am.values <- as.numeric(sub.gene.set.data$am.values)
+	names(sub.am.values) <- as.character(sub.gene.set.data$target.values)
+	
+	sub.narnea.res <- NaRnEA(signature = cur.ges, association.weight = sub.aw.values, association.mode = sub.am.values, ledge = TRUE)
+	
+	sub.res.data <- data.frame(ledge.values = sub.narnea.res$ledge, aw.values = sub.aw.values)
+	rownames(sub.res.data) <- names(sub.narnea.res$ledge)
+	return(sub.res.data)
+	
+}, cur.ges = cur.tumor.vs.tissue.mwu.ges)
+names(ledge.aracne3.narnea.res) <- sub.regulator.entrez.values
+
+# compute the Spearman correlation between NaRnEA ledge p-values and ARACNe3 Association Weight values for each of the statistically significantly enriched regulons
+ledge.scc.res.data <- sapply(ledge.aracne3.narnea.res, function(sub.ledge.data){
+	
+	sub.scc.res <- cor.test(x = rank(sub.ledge.data$ledge.values, ties.method = "random"), y = rank(sub.ledge.data$aw.values, ties.method = "random"), method = "spearman", alternative = "two.sided")
+	sub.res.vec <- c("scc.values" = as.numeric(sub.scc.res$estimate), "p.values" = sub.scc.res$p.value)
+	return(sub.res.vec)
+})
+ledge.scc.res.data <- as.data.frame(t(ledge.scc.res.data))
+
+# annotate the analysis with the NaRnEA Proportional Enrichment Score values and correct the p-values for multiple hypothesis testing to control the Family Wise Error Rate
+ledge.scc.res.data$pes.values <- sapply(cur.aracne3.narnea.res[match(rownames(ledge.scc.res.data), names(cur.aracne3.narnea.res))], function(x){return(x$pes)})
+ledge.scc.res.data$fwer.values <- p.adjust(p = ledge.scc.res.data$p.values, method = "bonferroni")
+
+# visualize the association bewteen the magnitude of the NaRnEA Proportional Enrichment Score and the Spearman Correlation coefficient in addition to computing the proportion of the Spearman Correlation coefficients that are statistically significantly negative (FWER < 0.05)
+plot.data <- data.frame(x.values = abs(ledge.scc.res.data$pes.values), y.values = ledge.scc.res.data$scc.values, p.values = ledge.scc.res.data$p.values, fwer.values = ledge.scc.res.data$fwer.values)
+plot.data$dir.values  <- "NS"
+plot.data[which(plot.data$y.values > 0 & plot.data$fwer.values < .05), "dir.values"] <- "UP"
+plot.data[which(plot.data$y.values < 0 & plot.data$fwer.values < .05), "dir.values"] <- "DOWN"
+plot.data$dir.values <- factor(plot.data$dir.values, levels = c("DOWN", "NS", "UP"))
+
+colour.value.vec <- c("DOWN" = "blue1", "NS" = "grey50", "UP" = "red1")
+
+x.breaks <- seq(from = 0, to = 1, by = 0.1)
+
+y.breaks <- seq(from = -1, to = 1, by = .2)
+
+tmp.cor.res <- cor.test(x = rank(plot.data$x.values, ties.method = "random"), y = rank(plot.data$y.values, ties.method = "random"), method = "pearson")
+
+cur.title <- "NaRnEA Manuscript - LUAD"
+cur.subtitle <- paste("DOWN = ", signif((100*mean(plot.data$dir.values == "DOWN")), sig.figs), "% (",sum(plot.data$dir.values == "DOWN")," / ",nrow(plot.data),")", " : ", "UP = ", signif((100*mean(plot.data$dir.values == "UP")), sig.figs), "% (",sum(plot.data$dir.values == "UP")," / ",nrow(plot.data),")", "\n", "SCC = ", signif(tmp.cor.res$estimate, sig.figs), " [",signif(tmp.cor.res$ conf.int[1], sig.figs),",",signif(tmp.cor.res$conf.int[2], sig.figs),"] (p = ",signif(tmp.cor.res$p.value ,sig.figs),")", sep = "")
+cur.x.lab <- "| Proportional Enrichment Score |"
+cur.y.lab <- "Ledge Spearman Correlation Coefficient"
+cur.color.lab <- "Direction (FWER < 0.05)"
+
+ggplot(plot.data) + theme_bw() + geom_hline(colour = "black", lwd = 1, yintercept = 0) + geom_vline(colour = "black", lwd = 1, xintercept = 0) + geom_point(aes(x = x.values, y = y.values, colour = dir.values), size = 3, shape = 21, fill = "white", alpha = 1, stroke = 1) + scale_colour_manual(values = colour.value.vec) + scale_x_continuous(limits = range(x.breaks), breaks = x.breaks) + scale_y_continuous(limits = range(y.breaks), breaks = y.breaks) + labs(title = cur.title, subtitle = cur.subtitle, x = cur.x.lab, y = cur.y.lab, colour = cur.color.lab) + theme(plot.title = element_text(hjust = 0.5, colour = "black", size = 30), plot.subtitle = element_text(hjust = 0.5, colour = "black", size = 23), axis.title = element_text(hjust = 0.5, colour = "black", size = 25), axis.text.x = element_text(hjust = 0.5, colour = "black", size = 22), axis.text.y = element_text(hjust = 1, colour = "black", size = 22), legend.title = element_text(hjust = 0, colour = "black", size = 20), legend.text = element_text(hjust = 0, colour = "black", size = 18), legend.position = "bottom")	
+
+ggsave(filename = paste("Fig_", figure.output.value, "_4.png", sep = ""), dpi = 500, path = "PNG_Figures", device = "png", width = 12, height = 11, units = "in")
+```
+![](../man/figures/Fig_1_4.png)
