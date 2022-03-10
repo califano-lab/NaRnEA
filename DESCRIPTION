@@ -1,18 +1,18 @@
 Package: NaRnEA
-Title: What the Package Does (One Line, Title Case)
+Title: Nonparametric analytical Rank-based Enrichment Analysis - An Information Theoretic Framework for Protein Activity Measurement
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Aaron",
            family = "Griffin",
            role = c("aut", "cre"),
            email = "atg2142@cumc.columbia.edu",
-           comment = c(ORCID = "YOUR-ORCID-ID")),
+           comment = c(ORCID = "0000-0002-8027-0822")),
 	person(given = "Lukas",
            family = "Vlahos",
            role = c("aut"),
            email = "lv2395@cumc.columbia.edu",
            comment = c(ORCID = "0000-0002-4083-6924")))
-Description: What the package does (one paragraph).
+Description: Nonparametric analytical Rank-based Enrichment Analysis (NaRnEA) is a newly developed gene set analysis method which leverages an analytical null model derived under the Principle of Maximum Entropy. NaRnEA critically improves over two widely used methods – Gene Set Enrichment Analysis (GSEA) and analytical Rank-based Enrichment Analysis (aREA) – as shown by differential activity measurement of ~2,500 transcriptional regulatory proteins across three cohorts in The Cancer Genome Atlas (TCGA) based on the enrichment of their transcriptional targets in differentially expressed genes. Independent phenotype-matched proteomic data from the Clinical Proteomic Tumor Analysis Consortium (CPTAC) was used to compare differential protein abundance and differential protein activity, confirming the accuracy of measurements made by NaRnEA. Our analysis crucially demonstrates that the sample-shuffling empirical null models leveraged by GSEA and aREA for evaluating gene set enrichment are overly conservative, a shortcoming that is overcome by NaRnEA’s optimal analytical null model.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
