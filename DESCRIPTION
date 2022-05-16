@@ -1,6 +1,6 @@
 Package: NaRnEA
 Title: Nonparametric analytical Rank-based Enrichment Analysis - An Information Theoretic Framework for Protein Activity Measurement
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     c(person(given = "Aaron",
            family = "Griffin",
