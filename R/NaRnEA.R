@@ -111,7 +111,7 @@ NaRnEA <- function(signature, association.weight, association.mode, ledge = TRUE
   cur.nes.minus <- (cur.directed.nes - cur.undirected.nes)/sqrt(2 - 2*(cur.directed.nes.undirected.nes.covariance))
   cur.minus.log.p.value <- pnorm(q = cur.nes.minus, lower.tail = TRUE, log.p = TRUE)
   
-  cur.final.log.p.value <- (min(c(cur.plus.log.p.value,cur.minus.log.p.value))) + log(2) + log1p((exp(min(c(cur.plus.log.p.value,cur.minus.log.p.value)))/(-2)))
+  cur.final.log.p.value <- (min(c(cur.plus.log.p.value,cur.minus.log.p.value))) + log(2) + log1p( (exp( min(c(cur.plus.log.p.value,cur.minus.log.p.value)) )/(-2) ) )
   
   if(cur.plus.log.p.value < cur.minus.log.p.value){
     cur.final.nes <- qnorm(p = (cur.final.log.p.value - log(2)), lower.tail = FALSE, log.p = TRUE)
@@ -245,10 +245,3 @@ NaRnEA <- function(signature, association.weight, association.mode, ledge = TRUE
   return(cur.final.res.list)
 
 }
-
-
-
-
-
-
-
