@@ -1,6 +1,6 @@
 Package: NaRnEA
 Title: Nonparametric analytical Rank-based Enrichment Analysis - An Information Theoretic Framework for Protein Activity Measurement
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     c(person(given = "Aaron",
            family = "Griffin",
@@ -18,7 +18,7 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports:
     ggplot2
 Suggests: 

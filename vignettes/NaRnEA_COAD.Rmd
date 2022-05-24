@@ -45,7 +45,6 @@ install("biomaRt")
 install("mblm")
 install("viper")
 install("pROC")
-install("TCGAbiolinks")
 install("devtools")
 install("DescTools")
 
@@ -58,7 +57,6 @@ library(biomaRt)
 library(mblm)
 library(viper)
 library(pROC)
-library(TCGAbiolinks)
 library(devtools)
 library(DescTools)
 
@@ -88,67 +86,12 @@ system(paste("mkdir ", cur.output.dir, sep = ""))
 
 ### Download Gene Expression Data From The Cancer Genome Atlas
 
-##### The colon adenocarcinoma gene expression data is publicly available from The Cancer Genome Atlas (TCGA). We can use the `TCGAbiolinks` R package to download the data and prepare the counts matrix for analysis.
+##### The colon adenocarcinoma gene expression data is publicly available from The Cancer Genome Atlas (TCGA). This data was downloaded using the `TCGAbiolinks` R package, and gene names were converted to ENTREZ using the `biomaRt` R package. The matrix is available as a `.rds` file within the NaRnEA package. We also load in a mapping between different gene name conventions generated using `biomaRt`:
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
-# use the TCGAbiolinks R package to load in the count-based gene expression profiles for the TCGA COAD cohort and the associated metadata
-cur.project.name <- "TCGA-COAD"
-cur.query <- GDCquery(project = cur.project.name, data.category = "Transcriptome Profiling", data.type = "Gene Expression Quantification", workflow.type = "HTSeq - Counts")
-GDCdownload(cur.query)
-
-cur.tcga.meta.data <- getResults(query = cur.query)
-
-cur.tcga.counts.files <- list.files(path = "GDCdata", pattern = "counts.gz", recursive = TRUE, full.names = TRUE)
-cur.tcga.file.names <- unlist(lapply(cur.tcga.counts.files,function(x){
-	y <- strsplit(x = x, split = "/", fixed = TRUE)[[1]]
-	z <- y[length(y)]
-	return(z)
-}))
-cur.tcga.case.values <- cur.tcga.meta.data[match(cur.tcga.file.names, cur.tcga.meta.data$file_name), "cases"]
-
-cur.tcga.total.counts.mat <- lapply(cur.tcga.counts.files, function(sub.file){
-	y <- read.table(file = sub.file, sep = "\t", header = FALSE, row.names = 1)
-	z <- as.numeric(y[which(substr(rownames(y),1,5) == "ENSG0"),1])
-	names(z) <- rownames(y)[which(substr(rownames(y),1,5) == "ENSG0")]
-	return(z)
-})
-names(cur.tcga.total.counts.mat) <- cur.tcga.case.values
-cur.tcga.total.counts.mat <- do.call("cbind", cur.tcga.total.counts.mat)
-rownames(cur.tcga.total.counts.mat) <- unlist(lapply(strsplit(x = rownames(cur.tcga.total.counts.mat), split = ".", fixed = TRUE),function(x){return(x[1])}))
-
-# use the biomaRt R package to convert the ensembl gene names to entrez id gene names
-cur.mart <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-cur.gene.conversion.data <- getBM(attributes = c("ensembl_transcript_id", "ensembl_gene_id", "entrezgene_id", "external_gene_name", "gene_biotype"), mart = cur.mart)
-
-sub.gene.conversion.data <- cur.gene.conversion.data
-colnames(sub.gene.conversion.data) <- c("enst.values","ensg.values","entrez.values","hugo.values","biotype.values")
-sub.gene.conversion.data <- sub.gene.conversion.data[which(sub.gene.conversion.data$biotype.values == "protein_coding"),]
-sub.gene.conversion.data <- sub.gene.conversion.data[which(!is.na(sub.gene.conversion.data$entrez.values)),]
-sub.gene.conversion.data$entrez.values <- paste("g",as.character(sub.gene.conversion.data$entrez.values),"",sep = "_")
-
-cur.tcga.entrez.counts.list <- lapply(sort(unique(as.character(sub.gene.conversion.data$entrez.values))),function(sub.entrez.value){
-	sub.ensg.values <- unique(sub.gene.conversion.data[which(sub.gene.conversion.data$entrez.values == sub.entrez.value),"ensg.values"])
-	sub.idx.values <- match(sub.ensg.values, rownames(cur.tcga.total.counts.mat))
-	sub.idx.values <- sub.idx.values[is.finite(sub.idx.values)]
-	return(sub.idx.values)
-})
-names(cur.tcga.entrez.counts.list) <- sort(unique(as.character(sub.gene.conversion.data$entrez.values)))
-
-cur.tcga.entrez.counts.mat <- t(sapply(cur.tcga.entrez.counts.list,function(sub.idx.values){
-	if(length(sub.idx.values) == 0){
-		y <- rep(0, times = ncol(cur.tcga.total.counts.mat))
-		names(y) <- colnames(cur.tcga.total.counts.mat)
-	} else if(length(sub.idx.values) == 1){
-		y <- as.numeric(cur.tcga.total.counts.mat[sub.idx.values,])
-		names(y) <- colnames(cur.tcga.total.counts.mat)
-	} else {
-		y <- colSums(cur.tcga.total.counts.mat[sub.idx.values,])
-		names(y) <- colnames(cur.tcga.total.counts.mat)
-	}
-	return(y)
-}))
-
-saveRDS(object = cur.tcga.entrez.counts.mat, file = paste(cur.output.dir,"/TCGA_COAD_Entrez_Counts_Mat.rds", sep = "")) 
+data(TCGA_COAD)
+data(gene.name.map)
+cur.tcga.entrez.counts.mat <- TCGA_COAD
 ```
 
 ### Separate Gene Expression Profiles for Network Reverse-Engineering and Gene Set Analysis
@@ -888,9 +831,9 @@ ggsave(filename = paste("Fig_", figure.output.value, "_2.png", sep = ""), dpi = 
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # load in the CPTAC protein abundance data for tumor and tissue
-cur.cptac.tumor.protein.data <- read.table(file = paste("NaRnEA", "data", "CPTAC", "Human__CPTAC_COAD__PNNL__Proteome__TMT__03_01_2017__BCM__Gene__PNNL_Tumor_TMT_UnsharedLogRatio.cct.txt", sep = "/"), header = TRUE, sep = "\t", row.names = 1)
-
-cur.cptac.tissue.protein.data <- read.table(file = paste("NaRnEA", "data", "CPTAC", "Human__CPTAC_COAD__PNNL__Proteome__TMT__03_01_2017__BCM__Gene__PNNL_Normal_TMT_UnsharedLogRatio.cct.txt", sep = "/"), header = TRUE, sep = "\t", row.names = 1)
+data(CPTAC_COAD)
+cur.cptac.tumor.protein.data <- CPTAC_COAD$tumor
+cur.cptac.tissue.protein.data <- CPTAC_COAD$tissue
 
 # compute the differential protein abundance of tumor vs. tissue from the CPTAC data using a Mann-Whitney U test (outputting the statistical significance as well as the rank-biserial correlation)
 cur.cptac.tumor.vs.tissue.mwu.res <- t(sapply(rownames(cur.cptac.tissue.protein.data), function(sub.gene, cur.test.data, cur.ref.data){
@@ -906,10 +849,10 @@ cur.cptac.tumor.vs.tissue.mwu.res <- as.data.frame(cur.cptac.tumor.vs.tissue.mwu
 
 cur.cptac.tumor.vs.tissue.mwu.res$gene.values <- rownames(cur.cptac.tumor.vs.tissue.mwu.res)
 
-# convert CPTAC gene names to entrez values using the biomaRt R package
-sub.cptac.conversion.data <- getBM(attributes = c("external_gene_name", "entrezgene_id"), mart = cur.mart, values = rownames(cur.cptac.tissue.protein.data))
-
-cur.cptac.tumor.vs.tissue.mwu.res$entrez.values <- paste("g", sub.cptac.conversion.data[match(cur.cptac.tumor.vs.tissue.mwu.res$gene.values, as.character(sub.cptac.conversion.data$external_gene_name)),"entrezgene_id"], "", sep = "_")
+# convert CPTAC gene names to entrez values
+entrez.gene.names <- gene.name.map[match(cur.cptac.tumor.vs.tissue.mwu.res$gene.values, gene.name.map$hugo.values),
+                                   'entrez.values']
+cur.cptac.tumor.vs.tissue.mwu.res$entrez.values <- entrez.gene.names
 
 # subset the CPTAC results to those genes that are present in the ARACNe3-inferred transcriptional regulatory network
 sub.cptac.tumor.vs.tissue.mwu.res <- cur.cptac.tumor.vs.tissue.mwu.res[which(cur.cptac.tumor.vs.tissue.mwu.res$entrez.values%in%names(aracne3.network.data.list)),]
