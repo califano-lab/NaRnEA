@@ -21,6 +21,6 @@ Protein are labeled with Hugo IDs.
 }
 \examples{
 data(CPTAC_COAD)
-\donttest(dim(CPTAC_COAD))
+\donttest{dim(CPTAC_COAD)}
 }
 \keyword{datasets}

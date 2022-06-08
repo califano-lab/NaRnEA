@@ -14,5 +14,5 @@
 #' 
 #' @examples 
 #' data(TCGA_LUAD)
-#' \donttest(dim(TCGA_LUAD))
+#' \donttest{dim(TCGA_LUAD)}
 "TCGA_LUAD"

@@ -20,6 +20,6 @@ are in columns. Genes are labeled with Entrez IDs.
 }
 \examples{
 data(TCGA_LUAD)
-\donttest(dim(TCGA_LUAD))
+\donttest{dim(TCGA_LUAD)}
 }
 \keyword{datasets}

@@ -20,6 +20,6 @@ values (biotype.values). Contains 177,680 rows.
 }
 \examples{
 data(gene.name.map)
-\donttest(dim(gene.name.map))
+\donttest{dim(gene.name.map)}
 }
 \keyword{datasets}

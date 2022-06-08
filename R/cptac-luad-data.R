@@ -15,5 +15,5 @@
 #' 
 #' @examples 
 #' data(CPTAC_LUAD)
-#' \donttest(dim(CPTAC_LUAD))
+#' \donttest{dim(CPTAC_LUAD)}
 "CPTAC_LUAD"

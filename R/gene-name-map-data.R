@@ -14,5 +14,5 @@
 #' 
 #' @examples 
 #' data(gene.name.map)
-#' \donttest(dim(gene.name.map))
+#' \donttest{dim(gene.name.map)}
 "gene.name.map"
