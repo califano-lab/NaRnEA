@@ -84,12 +84,15 @@ system(paste("mkdir ", cur.output.dir, sep = ""))
 
 ### Download Gene Expression Data From The Cancer Genome Atlas
 
-##### The lung adenocarcinoma gene expression data is publicly available from The Cancer Genome Atlas (TCGA). This data was downloaded using the `TCGAbiolinks` R package, and gene names were converted to ENTREZ using the `biomaRt` R package. The matrix is available as a `.rds` file within the NaRnEA package. We also load in a mapping between different gene name conventions generated using `biomaRt`:
+##### The lung adenocarcinoma gene expression data is publicly available from The Cancer Genome Atlas (TCGA). This data was downloaded using the `TCGAbiolinks` R package, and gene names were converted to ENTREZ using the `biomaRt` R package. The matrix is available as a `.rda` file within the NaRnEA package. We also load in a mapping between different gene name conventions generated using `biomaRt`:
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 data(TCGA_LUAD)
 data(gene.name.map)
 cur.tcga.entrez.counts.mat <- TCGA_LUAD
+cur.gene.conversion.data <- gene.name.map
+remove(TCGA_LUAD)
+remove(gene.name.map)
 ```
 
 ### Separate Gene Expression Profiles for Network Reverse-Engineering and Gene Set Analysis
@@ -976,7 +979,7 @@ x.break.values <- seq(from = -1, to = 1, by = .1)
 
 y.break.values <- seq(from = 0, to = (1 + nrow(sub.mra.data)), by = 1)
 
-y.label.values <- c("",paste(sub.gene.conversion.data[match(rownames(sub.mra.data), sub.gene.conversion.data$entrez.values), "hugo.values"]," : ","PES = ", signif(sub.mra.data$pes.values, sig.figs), " (p = 1e",ceiling(((pnorm(q = abs(sub.mra.data$nes.values), lower.tail = FALSE, log.p = TRUE) + log(2))/log(10))),")", sep = ""), "")
+y.label.values <- c("",paste(cur.gene.conversion.data[match(rownames(sub.mra.data), cur.gene.conversion.data$entrez.values), "hugo.values"]," : ","PES = ", signif(sub.mra.data$pes.values, sig.figs), " (p = 1e",ceiling(((pnorm(q = abs(sub.mra.data$nes.values), lower.tail = FALSE, log.p = TRUE) + log(2))/log(10))),")", sep = ""), "")
 
 cur.title <- "NaRnEA Manuscript - LUAD"
 cur.subtitle <- "Master Regulator Analysis Plot"
