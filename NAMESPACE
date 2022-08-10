@@ -2,3 +2,8 @@
 
 export(EnrichmentPlot)
 export(NaRnEA)
+export(combine_nes)
+export(directed_nes)
+export(matrix_narnea)
+export(nes_covariance)
+export(undirected_nes)
