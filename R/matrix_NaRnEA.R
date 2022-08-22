@@ -6,7 +6,7 @@
 #' @param min.targets Minimum number of targets needed between a regulon and a GES. Default of 30.
 #' @return List of matrices; 'nes' and 'pes'.
 #' @export
-matrix_narnea <- function(ges.mat, regulon.list, seed.val = 343, min.targets = 30) {
+matrixNaRnEA <- function(ges.mat, regulon.list, seed.val = 343, min.targets = 30) {
   set.seed(seed.val)
   cat("Data prep...")
   
