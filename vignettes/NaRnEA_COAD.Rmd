@@ -497,7 +497,7 @@ saveRDS(cur.aracne3.vs.null.narnea.roc, file = paste(cur.output.dir,"/ARACNe3_vs
 
 ```{r include = TRUE, echo = TRUE, eval = FALSE}
 # set the location of the GSEA command line bash file
-cur.gsea.script.path <- "GSEA_4.2.2/gsea-cli.sh"
+cur.gsea.script.path <- "NaRnEA/data/GSEA_4.2.1/gsea-cli.sh"
 
 # output the ARACNe3-inferred regulon gene sets in a format compatible with GSEA
 write.table(x = paste(c(names(aracne3.network.data.list)[1],names(aracne3.network.data.list)[1], as.character(aracne3.network.data.list[[1]]$target.values)), collapse = "\t"), file = paste(cur.output.dir,"TCGA_COAD_ARACNe3_Gene_Sets.gmt",sep = "/"), append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
